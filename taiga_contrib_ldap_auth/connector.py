@@ -38,7 +38,7 @@ BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
 FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
-def login(username: str, password: str) -> tuple:
+def login(login: str, password: str) -> tuple:
     """
     Connect to LDAP server, perform a search and attempt a bind.
 
@@ -73,9 +73,9 @@ def login(username: str, password: str) -> tuple:
 
     try:
         if(SEARCH_SUFFIX is not None and SEARCH_SUFFIX != ''):
-            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username + SEARCH_SUFFIX)
+            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, login + SEARCH_SUFFIX)
         else:
-            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username)
+            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, login)
         if SEARCH_FILTER:
             search_filter = '(&%s(%s))' % (search_filter, SEARCH_FILTER)
         c.search(search_base = SEARCH_BASE,
@@ -93,7 +93,7 @@ def login(username: str, password: str) -> tuple:
 
             return (user_email, full_name)
 
-        raise LDAPLoginError({"error_message": "Username or password incorrect"})
+        raise LDAPLoginError({"error_message": "Login or password incorrect"})
 
     except Exception as e:
         error = "LDAP account or password incorrect: %s" % e

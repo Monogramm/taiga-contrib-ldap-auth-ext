@@ -51,10 +51,16 @@ def ldap_register(username: str, email: str, full_name: str):
 
 
 def ldap_login_func(request):
-    username = request.DATA.get('username', None)
-    password = request.DATA.get('password', None)
+    # although the form field is called 'username', it can be an e-mail
+    # (or any other attribute)
+    login_input = request.DATA.get('username', None)
+    password_input = request.DATA.get('password', None)
 
-    email, full_name = connector.login(username = username, password = password)
+    # TODO: make sure these fields are sanitized before passing to LDAP server!
+    username, email, full_name = connector.login(login = login_input, password = password_input)
+
+    # TODO: ldap_register() does too much
     user = ldap_register(username = username, email = email, full_name = full_name)
+
     data = make_auth_response_data(user)
     return data
