@@ -46,7 +46,8 @@ LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
 
 A dedicated domain service account user (specified by `LDAP_BIND_DN`)
 performs a search on LDAP for an account that has a
-`LDAP_SEARCH_ATTRIBUTE` matching the user-provided login.
+`LDAP_USERNAME_ATTRIBUTE` or `LDAP_EMAIL_ATTRIBUTE` matching the
+user-provided login.
 
 If the search is successful, then the returned entry and the
 user-provided password  are used to attempt a bind to LDAP. If the bind is
