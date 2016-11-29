@@ -42,16 +42,21 @@ def login(username: str, password: str) -> tuple:
 
     try:
         if SERVER.lower().startswith("ldaps://"):
-            server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
+            use_ssl = True
         else:
-            server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = False)  # define an unsecure LDAP server, requesting info on DSE and schema
-
-        c = None
+            use_ssl = False
+        server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl)
 
         if BIND_DN is not None and BIND_DN != '':
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
+            user=BIND_DN
+            password=BIND_PASSWORD
+            authentication=SIMPLE
         else:
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=None, password=None, authentication=ANONYMOUS, check_names=True)
+            user=None
+            password=None
+            authentication=ANONYMOUS
+        c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
+                       user = user, password = password, authentication = authentication)
 
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
