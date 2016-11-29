@@ -39,6 +39,15 @@ EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
 FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
 def login(username: str, password: str) -> tuple:
+    """
+    Connect to LDAP server, perform a search and attempt a bind.
+
+    Can raise `exc.LDAPLoginError` exceptions if any of the
+    operations failed.
+
+    :returns: tuple (user_email, full_name)
+
+    """
 
     try:
         if SERVER.lower().startswith("ldaps://"):
