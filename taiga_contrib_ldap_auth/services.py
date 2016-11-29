@@ -29,7 +29,7 @@ def ldap_register(username: str, email: str, full_name: str):
     """
     Register a new user from LDAP.
 
-    This can raise `exc.IntegrityError` exceptions in
+    Can raise `exc.IntegrityError` exceptions in
     case of conflict found.
 
     :returns: User
@@ -37,13 +37,13 @@ def ldap_register(username: str, email: str, full_name: str):
     user_model = apps.get_model("users", "User")
 
     try:
-        # LDAP user association exist?
+        # LDAP user association exists?
         user = user_model.objects.get(username = username)
     except user_model.DoesNotExist:
         # Create a new user
         username_unique = slugify_uniquely(username, user_model, slugfield = "username")
-        user = user_model.objects.create(email = email,
-                                         username = username_unique,
+        user = user_model.objects.create(username = username_unique,
+                                         email = email,
                                          full_name = full_name)
         user_registered_signal.send(sender = user.__class__, user = user)
 
@@ -59,7 +59,6 @@ def ldap_login_func(request):
     # TODO: make sure these fields are sanitized before passing to LDAP server!
     username, email, full_name = connector.login(login = login_input, password = password_input)
 
-    # TODO: ldap_register() does too much
     user = ldap_register(username = username, email = email, full_name = full_name)
 
     data = make_auth_response_data(user)

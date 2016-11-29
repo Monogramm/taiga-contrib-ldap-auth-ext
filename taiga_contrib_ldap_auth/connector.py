@@ -29,12 +29,11 @@ SERVER = getattr(settings, "LDAP_SERVER", "")
 PORT = getattr(settings, "LDAP_PORT", "")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
-SEARCH_ATTRIBUTE = getattr(settings, "LDAP_SEARCH_ATTRIBUTE", "")
-SEARCH_ATTRIBUTE_SUFFIX = getattr(settings, "LDAP_SEARCH_ATTRIBUTE_SUFFIX", "")
-SEARCH_FILTER = getattr(settings, "LDAP_SEARCH_FILTER", "")
+SEARCH_FILTER_ADDITIONAL = getattr(settings, "LDAP_SEARCH_FILTER_ADDITIONAL", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 
+USERNAME_ATTRIBUTE = getattr(settings, "LDAP_USERNAME_ATTRIBUTE", "")
 EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "")
 FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "")
 
@@ -43,9 +42,9 @@ def login(login: str, password: str) -> tuple:
     Connect to LDAP server, perform a search and attempt a bind.
 
     Can raise `exc.LDAPLoginError` exceptions if any of the
-    operations failed.
+    operations fail.
 
-    :returns: tuple (user_email, full_name)
+    :returns: tuple (username, email, full_name)
 
     """
 
@@ -71,35 +70,35 @@ def login(login: str, password: str) -> tuple:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPLoginError({"error_message": error})
 
+    search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, login, EMAIL_ATTRIBUTE, login)
+    if SEARCH_FILTER_ADDITIONAL:
+        search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
+
     try:
-        if(SEARCH_ATTRIBUTE_SUFFIX is not None and SEARCH_ATTRIBUTE_SUFFIX != ''):
-            search_filter = '(%s=%s)' % (SEARCH_ATTRIBUTE, login + SEARCH_ATTRIBUTE_SUFFIX)
-        else:
-            search_filter = '(%s=%s)' % (SEARCH_ATTRIBUTE, login)
-
-        if SEARCH_FILTER:
-            search_filter = '(&%s(%s))' % (search_filter, SEARCH_FILTER)
-
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
                  search_scope = SUBTREE,
-                 attributes = [SEARCH_ATTRIBUTE, EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                 attributes = [USERNAME_ATTRIBUTE, EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
                  paged_size = 5)
-
-        if len(c.response) > 0:
-            dn = c.response[0].get('dn')
-            searched_attr = c.response[0].get('raw_attributes').get(SEARCH_ATTRIBUTE)[0].decode('utf-8')
-            user_email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
-            full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
-
-            user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
-                                   check_names = True, authentication = SIMPLE,
-                                   user = dn, password = password)
-
-            return (searched_attr, user_email, full_name)
-
-        raise LDAPLoginError({"error_message": "Login or password incorrect"})
-
     except Exception as e:
-        error = "LDAP account or password incorrect: %s" % e
+        error = "LDAP login incorrect: %s" % e
         raise LDAPLoginError({"error_message": error})
+
+    # TODO: handle multiple matches
+    if len(c.response) > 0:
+        username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
+        email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
+        full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
+    else:
+        raise LDAPLoginError({"error_message": "LDAP login not found"})
+
+    try:
+        dn = c.response[0].get('dn')
+        user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
+                               check_names = True, authentication = SIMPLE,
+                               user = dn, password = password)
+        return (username, email, full_name)
+    except Exception as e:
+        error = "LDAP bind failed: %s" % e
+        raise LDAPLoginError({"error_message": error})
+
