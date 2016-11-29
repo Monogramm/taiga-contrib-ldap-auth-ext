@@ -61,16 +61,16 @@ def login(login: str, password: str) -> tuple:
 
     # authenticate as service if credentials provided, anonymously otherwise
     if BIND_DN is not None and BIND_DN != '':
-        user = BIND_DN
-        password = BIND_PASSWORD
-        authentication = SIMPLE
+        service_user = BIND_DN
+        service_pass = BIND_PASSWORD
+        service_auth = SIMPLE
     else:
-        user = None
-        password = None
-        authentication = ANONYMOUS
+        service_user = None
+        service_pass = None
+        service_auth = ANONYMOUS
     try:
         c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
-                       user = user, password = password, authentication = authentication)
+                       user = service_user, password = service_pass, authentication = service_auth)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPLoginError({"error_message": error})
