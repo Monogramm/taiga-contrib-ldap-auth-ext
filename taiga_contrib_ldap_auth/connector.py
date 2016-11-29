@@ -48,32 +48,37 @@ def login(login: str, password: str) -> tuple:
 
     """
 
+    # connect to the LDAP server
+    if SERVER.lower().startswith("ldaps://"):
+        use_ssl = True
+    else:
+        use_ssl = False
     try:
-        if SERVER.lower().startswith("ldaps://"):
-            use_ssl = True
-        else:
-            use_ssl = False
         server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl)
-
-        if BIND_DN is not None and BIND_DN != '':
-            user = BIND_DN
-            password = BIND_PASSWORD
-            authentication = SIMPLE
-        else:
-            user = None
-            password = None
-            authentication = ANONYMOUS
-        c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
-                       user = user, password = password, authentication = authentication)
-
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPLoginError({"error_message": error})
 
+    # authenticate as service if credentials provided, anonymously otherwise
+    if BIND_DN is not None and BIND_DN != '':
+        user = BIND_DN
+        password = BIND_PASSWORD
+        authentication = SIMPLE
+    else:
+        user = None
+        password = None
+        authentication = ANONYMOUS
+    try:
+        c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
+                       user = user, password = password, authentication = authentication)
+    except Exception as e:
+        error = "Error connecting to LDAP server: %s" % e
+        raise LDAPLoginError({"error_message": error})
+
+    # search for user-provided login
     search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, login, EMAIL_ATTRIBUTE, login)
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
-
     try:
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
@@ -84,21 +89,24 @@ def login(login: str, password: str) -> tuple:
         error = "LDAP login incorrect: %s" % e
         raise LDAPLoginError({"error_message": error})
 
+    # stop if no search results
     # TODO: handle multiple matches
-    if len(c.response) > 0:
-        username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
-        email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
-        full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
-    else:
+    if len(c.response) == 0:
         raise LDAPLoginError({"error_message": "LDAP login not found"})
 
+    # attempt LDAP bind
+    username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
+    email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
+    full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = c.response[0].get('dn')
         user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
                                check_names = True, authentication = SIMPLE,
                                user = dn, password = password)
-        return (username, email, full_name)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPLoginError({"error_message": error})
 
+    # LDAP binding successful, but some values might have changed, or
+    # this is the user's first login, so return them
+    return (username, email, full_name)
