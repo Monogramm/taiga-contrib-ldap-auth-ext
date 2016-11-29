@@ -38,14 +38,14 @@ def ldap_register(username: str, email: str, full_name: str):
 
     try:
         # LDAP user association exist?
-        user = user_model.objects.get(username=username)
+        user = user_model.objects.get(username = username)
     except user_model.DoesNotExist:
         # Create a new user
-        username_unique = slugify_uniquely(username, user_model, slugfield="username")
-        user = user_model.objects.create(email=email,
-                                         username=username_unique,
-                                         full_name=full_name)
-        user_registered_signal.send(sender=user.__class__, user=user)
+        username_unique = slugify_uniquely(username, user_model, slugfield = "username")
+        user = user_model.objects.create(email = email,
+                                         username = username_unique,
+                                         full_name = full_name)
+        user_registered_signal.send(sender = user.__class__, user = user)
 
     return user
 
@@ -54,7 +54,7 @@ def ldap_login_func(request):
     username = request.DATA.get('username', None)
     password = request.DATA.get('password', None)
 
-    email, full_name = connector.login(username=username, password=password)
-    user = ldap_register(username=username, email=email, full_name=full_name)
+    email, full_name = connector.login(username = username, password = password)
+    user = ldap_register(username = username, email = email, full_name = full_name)
     data = make_auth_response_data(user)
     return data

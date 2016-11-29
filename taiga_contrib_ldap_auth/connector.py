@@ -57,13 +57,13 @@ def login(username: str, password: str) -> tuple:
         server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl)
 
         if BIND_DN is not None and BIND_DN != '':
-            user=BIND_DN
-            password=BIND_PASSWORD
-            authentication=SIMPLE
+            user = BIND_DN
+            password = BIND_PASSWORD
+            authentication = SIMPLE
         else:
-            user=None
-            password=None
-            authentication=ANONYMOUS
+            user = None
+            password = None
+            authentication = ANONYMOUS
         c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
                        user = user, password = password, authentication = authentication)
 
