@@ -83,17 +83,20 @@ def login(login: str, password: str) -> tuple:
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
                  search_scope = SUBTREE,
-                 attributes = [EMAIL_ATTRIBUTE,FULL_NAME_ATTRIBUTE],
+                 attributes = [SEARCH_ATTRIBUTE, EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
                  paged_size = 5)
 
         if len(c.response) > 0:
             dn = c.response[0].get('dn')
+            searched_attr = c.response[0].get('raw_attributes').get(SEARCH_ATTRIBUTE)[0].decode('utf-8')
             user_email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
             full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
 
-            user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
+            user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
+                                   check_names = True, authentication = SIMPLE,
+                                   user = dn, password = password)
 
-            return (user_email, full_name)
+            return (searched_attr, user_email, full_name)
 
         raise LDAPLoginError({"error_message": "Login or password incorrect"})
 
