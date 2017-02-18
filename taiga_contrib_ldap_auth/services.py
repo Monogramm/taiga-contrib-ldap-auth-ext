@@ -15,13 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import transaction as tx
+from django.conf import settings
 from django.apps import apps
 
+from taiga.base.connectors.exceptions import ConnectorBaseException, BaseException
 from taiga.base.utils.slug import slugify_uniquely
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
+from taiga.auth.services import get_auth_plugins
 
 from . import connector
+
+FALLBACK = getattr(settings, "LDAP_FALLBACK", "")
 
 
 @tx.atomic
@@ -61,10 +66,26 @@ def ldap_login_func(request):
     login_input = request.DATA.get('username', None)
     password_input = request.DATA.get('password', None)
 
-    # TODO: make sure these fields are sanitized before passing to LDAP server!
-    username, email, full_name = connector.login(login = login_input, password = password_input)
+    try:
+        # TODO: make sure these fields are sanitized before passing to LDAP server!
+        username, email, full_name = connector.login(login = login_input, password = password_input)
+    except connector.LDAPUserLoginError as ldap_error:
+        # If no fallback authentication is specified, raise the original LDAP error
+        if not FALLBACK:
+            raise
 
-    user = ldap_register(username = username, email = email, full_name = full_name)
-
-    data = make_auth_response_data(user)
-    return data
+        # Try normal authentication
+        try:
+            return get_auth_plugins()["normal"]["login_func"](request)
+        except BaseException as normal_error:
+            # Merge error messages of 'normal' and 'ldap' auth.
+            raise ConnectorBaseException({
+                "error_message": {
+                    "ldap": ldap_error.detail["error_message"],
+                    "normal": normal_error.detail
+                }
+            })
+    else:
+        user = ldap_register(username = username, email = email, full_name = full_name)
+        data = make_auth_response_data(user)
+        return data

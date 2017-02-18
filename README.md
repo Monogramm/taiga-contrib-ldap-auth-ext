@@ -42,6 +42,9 @@ LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
 LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
+
+# Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
+# LDAP_FALLBACK = "normal"
 ```
 
 A dedicated domain service account user (specified by `LDAP_BIND_DN`)
