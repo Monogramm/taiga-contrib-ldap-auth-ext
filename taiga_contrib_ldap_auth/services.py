@@ -67,10 +67,10 @@ def register_or_update(username: str, email: str, full_name: str):
     username = _slugify(username)
 
     try:
-        # LDAP user association exists?
+        # has user logged in before?
         user = user_model.objects.get(username = username)
     except user_model.DoesNotExist:
-        # Create a new user
+        # create a new user
         username_unique = slugify_uniquely(username,
                                            user_model,
                                            slugfield = "username")
@@ -78,11 +78,11 @@ def register_or_update(username: str, email: str, full_name: str):
                                          email = email,
                                          full_name = full_name)
         user_registered_signal.send(sender = user.__class__, user = user)
-
-    # update DB entry if LDAP field values differ
-    if user.email != email or user.full_name != full_name:
-        user_object = user_model.objects.filter(pk = user.pk)
-        user_object.update(email = email, full_name = full_name)
-        user.refresh_from_db()
+    else:
+        # update DB entry if LDAP field values differ
+        if user.email != email or user.full_name != full_name:
+            user_object = user_model.objects.filter(pk = user.pk)
+            user_object.update(email = email, full_name = full_name)
+            user.refresh_from_db()
 
     return user
