@@ -68,8 +68,8 @@ def ldap_login_func(request):
                                                  password = pass_input)
 
     user = register_or_update(username = username,
-                               email = email,
-                               full_name = full_name)
+                              email = email,
+                              full_name = full_name)
 
     data = make_auth_response_data(user)
     return data
