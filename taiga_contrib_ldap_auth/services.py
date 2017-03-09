@@ -21,16 +21,30 @@ from taiga.auth.signals import user_registered as user_registered_signal
 from . import connector
 
 
+def _slugify(username: str):
+    """Deployment-specific username slugification.
+
+    Your LDAP may allow, for example, both users `User` and `user` to
+    exist. Django's `slugify()` would map both to `user`. Taiga's
+    `slugify_uniquely()` would map either to `user` if `user` doesn't
+    yet exist in the database, and to `user-<something>` if it does.
+
+    Edit this if your LDAP installation allows characters that Taiga
+    slugs do not allow.
+    """
+    return username
+
+
 def ldap_login_func(request):
     """TODO: desc"""
     # although the form field is called 'username', it can be an e-mail
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
-    password_input = request.DATA.get('password', None)
+    pass_input = request.DATA.get('password', None)
 
     # TODO: sanitize before passing to LDAP server?
     username, email, full_name = connector.login(login = login_input,
-                                                 password = password_input)
+                                                 password = pass_input)
 
     user = register_or_update(username = username,
                                email = email,
@@ -50,6 +64,7 @@ def register_or_update(username: str, email: str, full_name: str):
     :returns: User
     """
     user_model = apps.get_model("users", "User")
+    username = _slugify(username)
 
     try:
         # LDAP user association exists?
