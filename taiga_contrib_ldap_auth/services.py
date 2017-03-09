@@ -22,16 +22,37 @@ from . import connector
 
 
 def _slugify(username: str):
-    """Deployment-specific username slugification.
+    """Deployment-specific username-to-unique-id slugification.
+
+    Taiga requires a way to map LDAP attributes to local database
+    unique identifiers. Depending on your setup, the sets of allowed
+    characters for either may overlap only partially, or one may be
+    a subset of another.
 
     Your LDAP may allow, for example, both users `User` and `user` to
     exist. Django's `slugify()` would map both to `user`. Taiga's
     `slugify_uniquely()` would map either to `user` if `user` doesn't
-    yet exist in the database, and to `user-<something>` if it does.
+    yet exist in the database, and to `user-<something>` if it does -
+    possibly uniquely on each login attempt.
 
     Edit this if your LDAP installation allows characters that Taiga
-    slugs do not allow.
+    slugs do not allow, or if substitutions need to be performed prior
+    to slugification.
+
+    NOTE that modifying code like this is ugly at best. Then again, so
+    is making assumptions on what a username can be.
+
+    NOTE also that adding or removing constraints on an already-populated
+    database may result in unexpected failures.
     """
+    # EXAMPLES PROVIDED BELOW MAY NOT WORK AS YOU EXPECT
+    # example: replace common symbols found in e-mail addresses
+    #username = username.replace('.', '-')
+    #username = username.replace('+', '-')
+    #username = username.replace('@', '-')
+    # example: force lower-case
+    #username = username.lower()
+
     return username
 
 
