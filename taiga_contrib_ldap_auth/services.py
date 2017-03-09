@@ -41,7 +41,9 @@ def ldap_register(username: str, email: str, full_name: str):
         user = user_model.objects.get(username = username)
     except user_model.DoesNotExist:
         # Create a new user
-        username_unique = slugify_uniquely(username, user_model, slugfield = "username")
+        username_unique = slugify_uniquely(username,
+                                           user_model,
+                                           slugfield = "username")
         user = user_model.objects.create(username = username_unique,
                                          email = email,
                                          full_name = full_name)
@@ -49,7 +51,8 @@ def ldap_register(username: str, email: str, full_name: str):
 
     # update DB entry if LDAP field values differ
     if user.email != email or user.full_name != full_name:
-        user_model.objects.filter(pk = user.pk).update(email = email, full_name = full_name)
+        user_object = user_model.objects.filter(pk = user.pk)
+        user_object.update(email = email, full_name = full_name)
         user.refresh_from_db()
 
     return user
@@ -61,10 +64,13 @@ def ldap_login_func(request):
     login_input = request.DATA.get('username', None)
     password_input = request.DATA.get('password', None)
 
-    # TODO: make sure these fields are sanitized before passing to LDAP server!
-    username, email, full_name = connector.login(login = login_input, password = password_input)
+    # TODO: sanitize before passing to LDAP server?
+    username, email, full_name = connector.login(login = login_input,
+                                                 password = password_input)
 
-    user = ldap_register(username = username, email = email, full_name = full_name)
+    user = ldap_register(username = username,
+                         email = email,
+                         full_name = full_name)
 
     data = make_auth_response_data(user)
     return data
