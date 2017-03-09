@@ -21,13 +21,31 @@ from taiga.auth.signals import user_registered as user_registered_signal
 from . import connector
 
 
-@tx.atomic
-def ldap_register(username: str, email: str, full_name: str):
-    """
-    Register a new user from LDAP.
+def ldap_login_func(request):
+    """TODO: desc"""
+    # although the form field is called 'username', it can be an e-mail
+    # (or any other attribute)
+    login_input = request.DATA.get('username', None)
+    password_input = request.DATA.get('password', None)
 
-    Can raise `exc.IntegrityError` exceptions in
-    case of conflict found.
+    # TODO: sanitize before passing to LDAP server?
+    username, email, full_name = connector.login(login = login_input,
+                                                 password = password_input)
+
+    user = register_or_update(username = username,
+                               email = email,
+                               full_name = full_name)
+
+    data = make_auth_response_data(user)
+    return data
+
+
+@tx.atomic
+def register_or_update(username: str, email: str, full_name: str):
+    """
+    Register new or update existing user in Django DB from LDAP data.
+
+    Can raise `exc.IntegrityError` exceptions in case of conflict found.
 
     :returns: User
     """
@@ -53,21 +71,3 @@ def ldap_register(username: str, email: str, full_name: str):
         user.refresh_from_db()
 
     return user
-
-
-def ldap_login_func(request):
-    # although the form field is called 'username', it can be an e-mail
-    # (or any other attribute)
-    login_input = request.DATA.get('username', None)
-    password_input = request.DATA.get('password', None)
-
-    # TODO: sanitize before passing to LDAP server?
-    username, email, full_name = connector.login(login = login_input,
-                                                 password = password_input)
-
-    user = ldap_register(username = username,
-                         email = email,
-                         full_name = full_name)
-
-    data = make_auth_response_data(user)
-    return data
