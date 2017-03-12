@@ -11,13 +11,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, SIMPLE, ANONYMOUS, SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, NONE
+from ldap3 import Server, Connection, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
 
 
-class LDAPLoginError(ConnectorBaseException):
+class LDAPError(ConnectorBaseException):
+    pass
+
+
+class LDAPConnectionError(LDAPError):
+    pass
+
+
+class LDAPUserLoginError(LDAPError):
     pass
 
 
@@ -32,6 +40,7 @@ BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 USERNAME_ATTRIBUTE = getattr(settings, "LDAP_USERNAME_ATTRIBUTE", "")
 EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "")
 FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "")
+
 
 def login(login: str, password: str) -> tuple:
     """
@@ -53,7 +62,7 @@ def login(login: str, password: str) -> tuple:
         server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
-        raise LDAPLoginError({"error_message": error})
+        raise LDAPConnectionError({"error_message": error})
 
     # authenticate as service if credentials provided, anonymously otherwise
     if BIND_DN is not None and BIND_DN != '':
@@ -69,7 +78,7 @@ def login(login: str, password: str) -> tuple:
                        user = service_user, password = service_pass, authentication = service_auth)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
-        raise LDAPLoginError({"error_message": error})
+        raise LDAPConnectionError({"error_message": error})
 
     # search for user-provided login
     search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, login, EMAIL_ATTRIBUTE, login)
@@ -83,12 +92,12 @@ def login(login: str, password: str) -> tuple:
                  paged_size = 5)
     except Exception as e:
         error = "LDAP login incorrect: %s" % e
-        raise LDAPLoginError({"error_message": error})
+        raise LDAPUserLoginError({"error_message": error})
 
     # stop if no search results
     # TODO: handle multiple matches
     if len(c.response) == 0:
-        raise LDAPLoginError({"error_message": "LDAP login not found"})
+        raise LDAPUserLoginError({"error_message": "LDAP login not found"})
 
     # attempt LDAP bind
     username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
@@ -101,7 +110,7 @@ def login(login: str, password: str) -> tuple:
                                user = dn, password = password)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
-        raise LDAPLoginError({"error_message": error})
+        raise LDAPUserLoginError({"error_message": error})
 
     # LDAP binding successful, but some values might have changed, or
     # this is the user's first login, so return them
