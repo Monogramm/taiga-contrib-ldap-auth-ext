@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, SIMPLE, ANONYMOUS, SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, NONE
+from ldap3 import Server, Connection, Tls, SIMPLE, ANONYMOUS, SYNC, SIMPLE, SYNC, ASYNC, SUBTREE, NONE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
 
+import ssl
 
 class LDAPLoginError(ConnectorBaseException):
     pass
@@ -40,9 +41,11 @@ FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
 def login(username: str, password: str) -> tuple:
 
+    tls = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ciphers='RSA+3DES')
+
     try:
         if SERVER.lower().startswith("ldaps://"):
-            server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
+            server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True, tls=tls) 
         else:
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = False)  # define an unsecure LDAP server, requesting info on DSE and schema
 
