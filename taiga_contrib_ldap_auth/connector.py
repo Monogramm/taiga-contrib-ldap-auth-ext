@@ -71,7 +71,7 @@ def login(username: str, password: str) -> tuple:
                  paged_size = 5)
 
         if len(c.response) > 0:
-            dn = c.response[0].get('dn')
+            dn = str(bytes(c.response[0].get('dn'), 'iso-8859-1'), encoding='utf-8')
             user_email = c.response[0].get('raw_attributes').get(EMAIL_PROPERTY)[0].decode('utf-8')
             full_name = c.response[0].get('raw_attributes').get(FULL_NAME_PROPERTY)[0].decode('utf-8')
 
