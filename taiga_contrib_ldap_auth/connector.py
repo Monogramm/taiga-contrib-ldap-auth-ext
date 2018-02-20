@@ -11,11 +11,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
+from ldap3 import Server, Connection, Tls, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
 
+import ssl
 
 class LDAPError(ConnectorBaseException):
     pass
@@ -41,6 +42,8 @@ USERNAME_ATTRIBUTE = getattr(settings, "LDAP_USERNAME_ATTRIBUTE", "")
 EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "")
 FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "")
 
+TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
+
 
 def login(login: str, password: str) -> tuple:
     """
@@ -56,13 +59,17 @@ def login(login: str, password: str) -> tuple:
 
     """
 
+    tls = None
+    if TLS_CERTS:
+        tls = TLS_CERTS
+
     # connect to the LDAP server
     if SERVER.lower().startswith("ldaps://"):
         use_ssl = True
     else:
         use_ssl = False
     try:
-        server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl)
+        server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl, tls = tls)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPConnectionError({"error_message": error})
