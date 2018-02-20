@@ -55,6 +55,9 @@ LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
 
+# Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
+# LDAP_FALLBACK = "normal"
+
 # Function to map LDAP username to local DB user unique identifier.
 # Upon successful LDAP bind, will override returned username attribute
 # value. May result in unexpected failures if changed after the database

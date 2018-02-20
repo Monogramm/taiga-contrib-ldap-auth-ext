@@ -15,12 +15,15 @@ from django.db import transaction as tx
 from django.conf import settings
 from django.apps import apps
 
+from taiga.base.connectors.exceptions import ConnectorBaseException, BaseException
 from taiga.base.utils.slug import slugify_uniquely
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
+from taiga.auth.services import get_auth_plugins
 
 from . import connector
 
+FALLBACK = getattr(settings, "LDAP_FALLBACK", "")
 
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 
@@ -32,16 +35,30 @@ def ldap_login_func(request):
     login_input = request.DATA.get('username', None)
     pass_input = request.DATA.get('password', None)
 
-    # TODO: sanitize before passing to LDAP server?
-    username, email, full_name = connector.login(login = login_input,
-                                                 password = pass_input)
+    try:
+        # TODO: make sure these fields are sanitized before passing to LDAP server!
+        username, email, full_name = connector.login(login = login_input, password = password_input)
+    except connector.LDAPUserLoginError as ldap_error:
+        # If no fallback authentication is specified, raise the original LDAP error
+        if not FALLBACK:
+            raise
 
-    user = register_or_update(username = username,
-                              email = email,
-                              full_name = full_name)
-
-    data = make_auth_response_data(user)
-    return data
+        # Try normal authentication
+        try:
+            return get_auth_plugins()["normal"]["login_func"](request)
+        except BaseException as normal_error:
+            # Merge error messages of 'normal' and 'ldap' auth.
+            raise ConnectorBaseException({
+                "error_message": {
+                    "ldap": ldap_error.detail["error_message"],
+                    "normal": normal_error.detail
+                }
+            })
+    else:
+        # LDAP Auth successful
+        user = register_or_update(username = username, email = email, full_name = full_name)
+        data = make_auth_response_data(user)
+        return data
 
 
 @tx.atomic
