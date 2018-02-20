@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, Tls, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
+from ldap3 import Server, Connection, Tls, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
@@ -43,6 +43,7 @@ EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "")
 FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "")
 
 TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
+START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
 def login(login: str, password: str) -> tuple:
@@ -83,8 +84,13 @@ def login(login: str, password: str) -> tuple:
         service_user = None
         service_pass = None
         service_auth = ANONYMOUS
+
+    auto_bind = AUTO_BIND_NO_TLS
+    if START_TLS:
+        auto_bind = AUTO_BIND_TLS_BEFORE_BIND
+
     try:
-        c = Connection(server, auto_bind = True, client_strategy = SYNC, check_names = True,
+        c = Connection(server, auto_bind = auto_bind, client_strategy = SYNC, check_names = True,
                        user = service_user, password = service_pass, authentication = service_auth)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
@@ -118,7 +124,7 @@ def login(login: str, password: str) -> tuple:
     full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = str(bytes(c.response[0].get('dn'), 'iso-8859-1'), encoding='utf-8')
-        user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
+        user_conn = Connection(server, auto_bind = auto_bind, client_strategy = SYNC,
                                check_names = True, authentication = SIMPLE,
                                user = dn, password = password)
     except Exception as e:

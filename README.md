@@ -29,6 +29,15 @@ INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 LDAP_SERVER = 'ldap://ldap.example.com'
 LDAP_PORT = 389
 
+# Flag to enable LDAP with STARTTLS before bind
+LDAP_START_TLS = False
+
+# Support of alternative LDAP ciphersuites
+#from ldap3 import Tls
+#import ssl
+
+#LDAP_TLS_CERTS = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ciphers='RSA+3DES')
+
 # Full DN of the service account use to connect to LDAP server and search for login user's account entry
 # If LDAP_BIND_DN is not specified, or is blank, then an anonymous bind is attempated
 LDAP_BIND_DN = 'CN=SVC Account,OU=Service Accounts,OU=Servers,DC=example,DC=com'
@@ -45,12 +54,6 @@ LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
 LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
-
-# Support of alternative LDAP ciphersuites
-#from ldap3 import Tls
-#import ssl
-
-#LDAP_TLS_CERTS = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ciphers='RSA+3DES')
 
 # Function to map LDAP username to local DB user unique identifier.
 # Upon successful LDAP bind, will override returned username attribute
