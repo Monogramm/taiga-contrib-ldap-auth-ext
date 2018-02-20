@@ -39,6 +39,7 @@ LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
 #LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
 
 # Names of attributes to get username, e-mail and full name values from
+# These fields need to have a value in LDAP 
 LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
