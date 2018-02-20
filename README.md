@@ -1,6 +1,6 @@
 # Taiga contrib ldap auth
 
-Extended Taiga.io plugin for LDAP authentication.
+Extended [Taiga.io](https://taiga.io/) plugin for LDAP authentication.
 
 This is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth) which also retrieves the various contributions and other forks into one.
 
