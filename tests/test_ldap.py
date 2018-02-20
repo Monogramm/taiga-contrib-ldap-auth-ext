@@ -36,7 +36,7 @@ def test_ldap_login_success():
 
 
 def test_ldap_login_fail():
-    with pytest.raises(connector.LDAPLoginError) as e:
+    with pytest.raises(connector.LDAPError) as e:
         login = "**userName**"
         password = "**password**"
         auth_info = connector.login(login, password)

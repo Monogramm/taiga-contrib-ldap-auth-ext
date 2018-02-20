@@ -43,6 +43,16 @@ LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
 LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
+
+# Function to map LDAP username to local DB user unique identifier.
+# Upon successful LDAP bind, will override returned username attribute
+# value. May result in unexpected failures if changed after the database
+# has been populated.
+def _ldap_slugify(uid: str) -> str:
+    # example: force lower-case
+    #uid = uid.lower()
+    return uid
+#LDAP_MAP_USERNAME_TO_UID = _ldap_slugify
 ```
 
 A dedicated domain service account user (specified by `LDAP_BIND_DN`)

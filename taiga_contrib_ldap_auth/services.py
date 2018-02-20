@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import transaction as tx
+from django.conf import settings
 from django.apps import apps
 
 from taiga.base.utils.slug import slugify_uniquely
@@ -21,39 +22,7 @@ from taiga.auth.signals import user_registered as user_registered_signal
 from . import connector
 
 
-def _slugify(username: str):
-    """Deployment-specific username-to-unique-id slugification.
-
-    Taiga requires a way to map LDAP attributes to local database
-    unique identifiers. Depending on your setup, the sets of allowed
-    characters for either may overlap only partially, or one may be
-    a subset of another.
-
-    Your LDAP may allow, for example, both users `User` and `user` to
-    exist. Django's `slugify()` would map both to `user`. Taiga's
-    `slugify_uniquely()` would map either to `user` if `user` doesn't
-    yet exist in the database, and to `user-<something>` if it does -
-    possibly uniquely on each login attempt.
-
-    Edit this if your LDAP installation allows characters that Taiga
-    slugs do not allow, or if substitutions need to be performed prior
-    to slugification.
-
-    NOTE that modifying code like this is ugly at best. Then again, so
-    is making assumptions on what a username can be.
-
-    NOTE also that adding or removing constraints on an already-populated
-    database may result in unexpected failures.
-    """
-    # EXAMPLES PROVIDED BELOW MAY NOT WORK AS YOU EXPECT
-    # example: replace common symbols found in e-mail addresses
-    #username = username.replace('.', '-')
-    #username = username.replace('+', '-')
-    #username = username.replace('@', '-')
-    # example: force lower-case
-    #username = username.lower()
-
-    return username
+SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 
 
 def ldap_login_func(request):
@@ -84,8 +53,11 @@ def register_or_update(username: str, email: str, full_name: str):
 
     :returns: User
     """
-    user_model = apps.get_model("users", "User")
-    username_unique = _slugify(username)
+    user_model = apps.get_model('users', 'User')
+
+    username_unique = username
+    if SLUGIFY:
+        username_unique = SLUGIFY(username)
 
     try:
         # has user logged in before?
