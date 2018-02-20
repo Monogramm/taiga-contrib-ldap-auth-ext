@@ -95,7 +95,7 @@ def login(login: str, password: str) -> tuple:
     email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
     full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
-        dn = c.response[0].get('dn')
+        dn = str(bytes(c.response[0].get('dn'), 'iso-8859-1'), encoding='utf-8')
         user_conn = Connection(server, auto_bind = True, client_strategy = SYNC,
                                check_names = True, authentication = SIMPLE,
                                user = dn, password = password)
