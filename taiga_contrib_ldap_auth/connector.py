@@ -46,8 +46,11 @@ def login(login: str, password: str) -> tuple:
     """
     Connect to LDAP server, perform a search and attempt a bind.
 
-    Can raise `exc.LDAPLoginError` exceptions if any of the
-    operations fail.
+    Can raise `exc.LDAPConnectionError` exceptions if the
+    connection to LDAP fails.
+
+    Can raise `exc.LDAPUserLoginError` exceptions if the
+    login to LDAP fails.
 
     :returns: tuple (username, email, full_name)
 
@@ -99,8 +102,8 @@ def login(login: str, password: str) -> tuple:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
 
     # handle multiple matches
-    if len(c.response) > 0:
-        raise LDAPLoginError({"error_message": "LDAP login could not be determined."})
+    if len(c.response) > 1:
+        raise LDAPUserLoginError({"error_message": "LDAP login could not be determined."})
 
     # attempt LDAP bind
     username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
