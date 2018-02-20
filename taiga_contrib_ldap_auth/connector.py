@@ -86,9 +86,12 @@ def login(login: str, password: str) -> tuple:
         raise LDAPLoginError({"error_message": error})
 
     # stop if no search results
-    # TODO: handle multiple matches
     if len(c.response) == 0:
         raise LDAPLoginError({"error_message": "LDAP login not found"})
+
+    # handle multiple matches
+    if len(c.response) > 0:
+        raise LDAPLoginError({"error_message": "LDAP login could not be determined."})
 
     # attempt LDAP bind
     username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
