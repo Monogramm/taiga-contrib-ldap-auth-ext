@@ -17,13 +17,13 @@ import sys
 sys.path.append("../taiga-back/")
 
 from unittest.mock import patch, Mock
-from taiga_contrib_ldap_auth import connector
+from taiga_contrib_ldap_auth_ext import connector
 
 def test_ldap_login_success():
     BASE_EMAIL = "@example.com"
-    with patch("taiga_contrib_ldap_auth.connector.Server") as m_server, \
-            patch("taiga_contrib_ldap_auth.connector.Connection") as m_connection, \
-            patch("taiga_contrib_ldap_auth.connector.BASE_EMAIL", new=BASE_EMAIL):
+    with patch("taiga_contrib_ldap_auth_ext.connector.Server") as m_server, \
+            patch("taiga_contrib_ldap_auth_ext.connector.Connection") as m_connection, \
+            patch("taiga_contrib_ldap_auth_ext.connector.BASE_EMAIL", new=BASE_EMAIL):
         m_server.return_value = Mock()
         m_connection.return_value = Mock()
 

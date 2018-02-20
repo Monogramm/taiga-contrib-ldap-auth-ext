@@ -5,14 +5,14 @@ import os
 from setuptools import setup, find_packages
 
 setup(
-    name = 'taiga-contrib-ldap-auth',
-    version = ":versiontools:taiga_contrib_ldap_auth:",
-    description = "The Taiga plugin for ldap authentication",
+    name = 'taiga-contrib-ldap-auth-ext',
+    version = ":versiontools:taiga_contrib_ldap_auth_ext:",
+    description = "The (extended) Taiga plugin for ldap authentication",
     long_description = "",
     keywords = 'taiga, ldap, auth, plugin',
-    author = 'enskylin',
-    author_email = 'enskylin@synology.com',
-    url = 'https://ldap.com/taigaio/taiga-contrib-ldap-auth',
+    author = 'madmath03',
+    author_email = 'mb.mathieu.brunot@gmail.com',
+    url = 'https://github.com/madmath03/taiga-contrib-ldap-auth-ext',
     license = 'AGPL',
     include_package_data = True,
     packages = find_packages(),

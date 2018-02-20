@@ -16,7 +16,7 @@ from django.db.models import signals
 
 
 class TaigaContribLDAPAuthAppConfig(AppConfig):
-    name = "taiga_contrib_ldap_auth"
+    name = "taiga_contrib_ldap_auth_ext"
     verbose_name = "Taiga contrib ldap auth App Config"
 
     def ready(self):

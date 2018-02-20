@@ -1,15 +1,17 @@
 # Taiga contrib ldap auth
 
-Taiga.io plugin for LDAP authentication.
+Extended Taiga.io plugin for LDAP authentication.
+
+This is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth) which also retrieves the various contributions and other forks into one.
 
 
 ## Installation
 
-Install the PIP package `taiga-contrib-ldap-auth` in your
+Install the PIP package `taiga-contrib-ldap-auth-ext` in your
 `taiga-back` python virtualenv:
 
 ```bash
-  pip install taiga-contrib-ldap-auth
+  pip install taiga-contrib-ldap-auth-ext
 ```
 
 If needed, change `pip` to `pip3` to use the Python 3 version.
@@ -22,7 +24,7 @@ If needed, change `pip` to `pip3` to use the Python 3 version.
 Add the following to `settings/local.py`:
 
 ```python
-INSTALLED_APPS += ["taiga_contrib_ldap_auth"]
+INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 
 LDAP_SERVER = 'ldap://ldap.example.com'
 LDAP_PORT = 389
