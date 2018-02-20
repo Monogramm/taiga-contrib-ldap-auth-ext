@@ -85,16 +85,13 @@ def register_or_update(username: str, email: str, full_name: str):
     :returns: User
     """
     user_model = apps.get_model("users", "User")
-    username = _slugify(username)
+    username_unique = _slugify(username)
 
     try:
         # has user logged in before?
-        user = user_model.objects.get(username = username)
+        user = user_model.objects.get(username = username_unique)
     except user_model.DoesNotExist:
         # create a new user
-        username_unique = slugify_uniquely(username,
-                                           user_model,
-                                           slugfield = "username")
         user = user_model.objects.create(username = username_unique,
                                          email = email,
                                          full_name = full_name)
