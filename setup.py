@@ -12,7 +12,7 @@ setup(
     keywords = 'taiga, ldap, auth, plugin',
     author = 'madmath03',
     author_email = 'mb.mathieu.brunot@gmail.com',
-    url = 'https://github.com/madmath03/taiga-contrib-ldap-auth-ext',
+    url = 'https://github.com/Monogramm/taiga-contrib-ldap-auth-ext',
     license = 'AGPL',
     include_package_data = True,
     packages = find_packages(),
