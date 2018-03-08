@@ -110,6 +110,8 @@ def login(login: str, password: str) -> tuple:
         error = "LDAP login incorrect: %s" % e
         raise LDAPUserLoginError({"error_message": error})
 
+    # we are only interested in user objects in the response
+    c.response = [r for r in c.response if 'raw_attributes' in r and 'dn' in r]
     # stop if no search results
     if len(c.response) == 0:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
