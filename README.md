@@ -78,7 +78,7 @@ performs a search on LDAP for an account that has a
 user-provided login.
 
 If the search is successful, then the returned entry and the
-user-provided password  are used to attempt a bind to LDAP. If the bind is
+user-provided password are used to attempt a bind to LDAP. If the bind is
 successful, then we can say that the user is authorised to log in to
 Taiga.
 
@@ -96,7 +96,7 @@ suitably strong password should be chosen, eg. VmLYBbvJaf2kAqcrt5HjHdG6
 
 ### taiga-front
 
-Change the `loginFormType` setting to `"ldap"` in `dist/js/conf.json`:
+Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
 
 ```json
     ...
