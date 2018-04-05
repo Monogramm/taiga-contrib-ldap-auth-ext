@@ -120,10 +120,15 @@ def login(login: str, password: str) -> tuple:
     if len(c.response) > 1:
         raise LDAPUserLoginError({"error_message": "LDAP login could not be determined."})
 
+    # handle missing mandatory attributes
+    raw_attributes = c.response[0].get('raw_attributes');
+    if len(raw_attributes.get(USERNAME_ATTRIBUTE)) == 0 or len(raw_attributes.get(EMAIL_ATTRIBUTE)) == 0 or len(raw_attributes.get(FULL_NAME_ATTRIBUTE)) == 0  :
+        raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
+
     # attempt LDAP bind
-    username = c.response[0].get('raw_attributes').get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
-    email = c.response[0].get('raw_attributes').get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
-    full_name = c.response[0].get('raw_attributes').get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
+    username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
+    email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
+    full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = str(bytes(c.response[0].get('dn'), 'iso-8859-1'), encoding='utf-8')
         user_conn = Connection(server, auto_bind = auto_bind, client_strategy = SYNC,
