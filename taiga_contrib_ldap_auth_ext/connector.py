@@ -121,7 +121,7 @@ def login(login: str, password: str) -> tuple:
         raise LDAPUserLoginError({"error_message": "LDAP login could not be determined."})
 
     # handle missing mandatory attributes
-    raw_attributes = c.response[0].get('raw_attributes');
+    raw_attributes = c.response[0].get('raw_attributes')
     if len(raw_attributes.get(USERNAME_ATTRIBUTE)) == 0 or len(raw_attributes.get(EMAIL_ATTRIBUTE)) == 0 or len(raw_attributes.get(FULL_NAME_ATTRIBUTE)) == 0  :
         raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
