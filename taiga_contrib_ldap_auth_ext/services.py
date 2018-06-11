@@ -26,6 +26,8 @@ from . import connector
 FALLBACK = getattr(settings, "LDAP_FALLBACK", "")
 
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
+EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
+NAME_MAP = getattr(settings, 'LDAP_MAP_NAME', '')
 
 
 def ldap_login_func(request):
@@ -74,7 +76,14 @@ def register_or_update(username: str, email: str, full_name: str):
 
     username_unique = username
     if SLUGIFY:
-        username_unique = SLUGIFY(username)
+        username_unique = SLUGIFY(username)        
+        
+    if EMAIL_MAP:
+        email = EMAIL_MAP(email)
+
+        
+    if NAME_MAP:
+        full_name = NAME_MAP(full_name)
 
     try:
         # has user logged in before?
