@@ -62,12 +62,18 @@ LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
 # Upon successful LDAP bind, will override returned username attribute
 # value. May result in unexpected failures if changed after the database
 # has been populated.
+# 
 def _ldap_slugify(uid: str) -> str:
     # example: force lower-case
     #uid = uid.lower()
     return uid
-
+    
+# To enable the function above, uncomment the line below to store the function in the variable
 #LDAP_MAP_USERNAME_TO_UID = _ldap_slugify
+
+# Similarly, you can apply filters to the email and name by defining functions and specifying them here in the same way
+#LDAP_MAP_EMAIL = _ldap_map_email
+#LDAP_MAP_NAME = _ldap_map_name
 
 
 ```
