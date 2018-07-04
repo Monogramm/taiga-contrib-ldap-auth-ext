@@ -11,7 +11,7 @@ setup(
     long_description = "",
     keywords = 'taiga, ldap, auth, plugin',
     author = 'madmath03',
-    author_email = 'mb.mathieu.brunot@gmail.com',
+    author_email = 'mathieu.brunot@monogramm.io',
     url = 'https://github.com/Monogramm/taiga-contrib-ldap-auth-ext',
     license = 'AGPL',
     include_package_data = True,
