@@ -30,6 +30,7 @@ class LDAPUserLoginError(LDAPError):
     pass
 
 
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
 SERVER = getattr(settings, "LDAP_SERVER", "")
 PORT = getattr(settings, "LDAP_PORT", "")
 

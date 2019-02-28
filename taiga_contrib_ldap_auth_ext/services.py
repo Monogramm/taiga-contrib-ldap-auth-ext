@@ -23,15 +23,29 @@ from taiga.auth.services import get_auth_plugins
 
 from . import connector
 
-FALLBACK = getattr(settings, "LDAP_FALLBACK", "")
+FALLBACK = getattr(settings, 'LDAP_FALLBACK', '')
 
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
 NAME_MAP = getattr(settings, 'LDAP_MAP_NAME', '')
 
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+# Taiga super users group id
+#GROUP_ADMIN = getattr(settings, 'LDAP_GROUP_ADMIN', '')
 
 def ldap_login_func(request):
-    """TODO: desc"""
+    """
+    Login a user using LDAP.
+
+    This will first try to authenticate user against LDAP.
+    If authentication is succesful, it will register user in Django DB from LDAP data.
+    If LDAP authentication fails, it will either use FALLBACK login or crash.
+
+    Can raise `ConnectorBaseException` exceptions in case of authentication failure.
+    Can raise `exc.IntegrityError` exceptions in case of conflict found.
+
+    :returns: User
+    """
     # although the form field is called 'username', it can be an e-mail
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
@@ -85,6 +99,10 @@ def register_or_update(username: str, email: str, full_name: str):
     if NAME_MAP:
         full_name = NAME_MAP(full_name)
 
+    # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
+    # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+    superuser = false
+
     try:
         # has user logged in before?
         user = user_model.objects.get(username = username_unique)
@@ -92,7 +110,9 @@ def register_or_update(username: str, email: str, full_name: str):
         # create a new user
         user = user_model.objects.create(username = username_unique,
                                          email = email,
-                                         full_name = full_name)
+                                         full_name = full_name, 
+                                         is_staff = superuser,
+                                         is_superuser = superuser)
         user_registered_signal.send(sender = user.__class__, user = user)
     else:
         # update DB entry if LDAP field values differ
