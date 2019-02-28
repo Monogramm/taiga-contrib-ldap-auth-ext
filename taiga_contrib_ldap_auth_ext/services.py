@@ -59,15 +59,15 @@ def ldap_login_func(request):
         if not FALLBACK:
             raise
 
-        # Try normal authentication
+        # Try fallback authentication
         try:
-            return get_auth_plugins()["normal"]["login_func"](request)
+            return get_auth_plugins()[FALLBACK]["login_func"](request)
         except BaseException as normal_error:
             # Merge error messages of 'normal' and 'ldap' auth.
             raise ConnectorBaseException({
                 "error_message": {
                     "ldap": ldap_error.detail["error_message"],
-                    "normal": normal_error.detail
+                    FALLBACK: normal_error.detail
                 }
             })
     else:
@@ -95,7 +95,6 @@ def register_or_update(username: str, email: str, full_name: str):
     if EMAIL_MAP:
         email = EMAIL_MAP(email)
 
-        
     if NAME_MAP:
         full_name = NAME_MAP(full_name)
 
