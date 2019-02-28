@@ -72,13 +72,13 @@ def ldap_login_func(request):
             })
     else:
         # LDAP Auth successful
-        user = register_or_update(username = username, email = email, full_name = full_name)
+        user = register_or_update(username = username, email = email, full_name = full_name, password = password_input)
         data = make_auth_response_data(user)
         return data
 
 
 @tx.atomic
-def register_or_update(username: str, email: str, full_name: str):
+def register_or_update(username: str, email: str, full_name: str, password: str):
     """
     Register new or update existing user in Django DB from LDAP data.
 
@@ -91,7 +91,7 @@ def register_or_update(username: str, email: str, full_name: str):
     username_unique = username
     if SLUGIFY:
         username_unique = SLUGIFY(username)        
-        
+
     if EMAIL_MAP:
         email = EMAIL_MAP(email)
 
@@ -112,8 +112,14 @@ def register_or_update(username: str, email: str, full_name: str):
                                          full_name = full_name, 
                                          is_staff = superuser,
                                          is_superuser = superuser)
+        # Set local password to match LDAP (issues/21)
+        user.set_password(password)
+        user.save()
         user_registered_signal.send(sender = user.__class__, user = user)
     else:
+        # Set local password to match LDAP (issues/21)
+        user.set_password(password)
+        user.save()
         # update DB entry if LDAP field values differ
         if user.email != email or user.full_name != full_name:
             user_object = user_model.objects.filter(pk = user.pk)
