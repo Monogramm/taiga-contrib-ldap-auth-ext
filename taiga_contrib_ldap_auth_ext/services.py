@@ -17,6 +17,7 @@ from django.apps import apps
 
 from taiga.base.connectors.exceptions import ConnectorBaseException, BaseException
 from taiga.base.utils.slug import slugify_uniquely
+from taiga.auth.services import send_register_email
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
 from taiga.auth.services import get_auth_plugins
@@ -115,7 +116,9 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         # Set local password to match LDAP (issues/21)
         user.set_password(password)
         user.save()
+
         user_registered_signal.send(sender = user.__class__, user = user)
+        send_register_email(user)
     else:
         # Set local password to match LDAP (issues/21)
         user.set_password(password)
