@@ -81,8 +81,8 @@ LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
 # Taiga super users group id
 #LDAP_GROUP_ADMIN = 'OU=TaigaAdmin,DC=example,DC=net'
 
-# Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
-# LDAP_FALLBACK = "normal"
+# Fallback on normal authentication method if LDAP auth fails. Uncomment to disable and only allow LDAP login.
+#LDAP_FALLBACK = ""
 
 # Function to map LDAP username to local DB user unique identifier.
 # Upon successful LDAP bind, will override returned username attribute

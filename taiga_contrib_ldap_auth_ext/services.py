@@ -24,7 +24,7 @@ from taiga.auth.services import get_auth_plugins
 
 from . import connector
 
-FALLBACK = getattr(settings, 'LDAP_FALLBACK', '')
+FALLBACK = getattr(settings, 'LDAP_FALLBACK', 'normal')
 
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
