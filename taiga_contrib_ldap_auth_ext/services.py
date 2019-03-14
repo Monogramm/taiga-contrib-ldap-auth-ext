@@ -17,21 +17,36 @@ from django.apps import apps
 
 from taiga.base.connectors.exceptions import ConnectorBaseException, BaseException
 from taiga.base.utils.slug import slugify_uniquely
+from taiga.auth.services import send_register_email
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
 from taiga.auth.services import get_auth_plugins
 
 from . import connector
 
-FALLBACK = getattr(settings, "LDAP_FALLBACK", "")
+FALLBACK = getattr(settings, 'LDAP_FALLBACK', '')
 
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
 NAME_MAP = getattr(settings, 'LDAP_MAP_NAME', '')
 
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+# Taiga super users group id
+#GROUP_ADMIN = getattr(settings, 'LDAP_GROUP_ADMIN', '')
 
 def ldap_login_func(request):
-    """TODO: desc"""
+    """
+    Login a user using LDAP.
+
+    This will first try to authenticate user against LDAP.
+    If authentication is succesful, it will register user in Django DB from LDAP data.
+    If LDAP authentication fails, it will either use FALLBACK login or crash.
+
+    Can raise `ConnectorBaseException` exceptions in case of authentication failure.
+    Can raise `exc.IntegrityError` exceptions in case of conflict found.
+
+    :returns: User
+    """
     # although the form field is called 'username', it can be an e-mail
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
@@ -45,26 +60,26 @@ def ldap_login_func(request):
         if not FALLBACK:
             raise
 
-        # Try normal authentication
+        # Try fallback authentication
         try:
-            return get_auth_plugins()["normal"]["login_func"](request)
+            return get_auth_plugins()[FALLBACK]["login_func"](request)
         except BaseException as normal_error:
             # Merge error messages of 'normal' and 'ldap' auth.
             raise ConnectorBaseException({
                 "error_message": {
                     "ldap": ldap_error.detail["error_message"],
-                    "normal": normal_error.detail
+                    FALLBACK: normal_error.detail
                 }
             })
     else:
         # LDAP Auth successful
-        user = register_or_update(username = username, email = email, full_name = full_name)
+        user = register_or_update(username = username, email = email, full_name = full_name, password = password_input)
         data = make_auth_response_data(user)
         return data
 
 
 @tx.atomic
-def register_or_update(username: str, email: str, full_name: str):
+def register_or_update(username: str, email: str, full_name: str, password: str):
     """
     Register new or update existing user in Django DB from LDAP data.
 
@@ -77,13 +92,16 @@ def register_or_update(username: str, email: str, full_name: str):
     username_unique = username
     if SLUGIFY:
         username_unique = SLUGIFY(username)        
-        
+
     if EMAIL_MAP:
         email = EMAIL_MAP(email)
 
-        
     if NAME_MAP:
         full_name = NAME_MAP(full_name)
+
+    # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
+    # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+    superuser = false
 
     try:
         # has user logged in before?
@@ -92,9 +110,19 @@ def register_or_update(username: str, email: str, full_name: str):
         # create a new user
         user = user_model.objects.create(username = username_unique,
                                          email = email,
-                                         full_name = full_name)
+                                         full_name = full_name, 
+                                         is_staff = superuser,
+                                         is_superuser = superuser)
+        # Set local password to match LDAP (issues/21)
+        user.set_password(password)
+        user.save()
+
         user_registered_signal.send(sender = user.__class__, user = user)
+        send_register_email(user)
     else:
+        # Set local password to match LDAP (issues/21)
+        user.set_password(password)
+        user.save()
         # update DB entry if LDAP field values differ
         if user.email != email or user.full_name != full_name:
             user_object = user_model.objects.filter(pk = user.pk)

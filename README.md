@@ -1,3 +1,8 @@
+![PyPI - License](https://img.shields.io/pypi/l/taiga-contrib-ldap-auth-ext.svg)
+[![PyPI - Status](https://img.shields.io/pypi/status/taiga-contrib-ldap-auth-ext.svg)](https://pypi.org/project/taiga-contrib-ldap-auth-ext/)
+[![PyPI](https://img.shields.io/pypi/v/taiga-contrib-ldap-auth-ext.svg)](https://pypi.org/project/taiga-contrib-ldap-auth-ext/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/taiga-contrib-ldap-auth-ext.svg)](https://pypi.org/project/taiga-contrib-ldap-auth-ext/)
+
 # Taiga contrib ldap auth
 
 Extended [Taiga.io](https://taiga.io/) plugin for LDAP authentication.
@@ -26,6 +31,7 @@ Add the following to `settings/local.py`:
 ```python
 INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
 LDAP_SERVER = 'ldap://ldap.example.com'
 LDAP_PORT = 389
 
@@ -54,6 +60,26 @@ LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
 LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
+
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
+# Group search filter where $1 is the project slug and $2 is the role slug
+#LDAP_GROUP_SEARCH_FILTER = 'CN=$2,OU=$1,OU=Groups,DC=example,DC=net'
+
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
+# Use an attribute in the user entry for membership
+#LDAP_USER_MEMBER_ATTRIBUTE = 'memberof,primaryGroupID'
+
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
+# Starting point within LDAP structure to search for login group
+#LDAP_GROUP_SEARCH_BASE = 'OU=Groups,DC=example,DC=net'
+# Group classes filter
+#LDAP_GROUP_FILTER = '(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames))'
+# Group member attribute
+#LDAP_GROUP_MEMBER_ATTRIBUTE = 'memberof,primaryGroupID'
+
+# TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+# Taiga super users group id
+#LDAP_GROUP_ADMIN = 'OU=TaigaAdmin,DC=example,DC=net'
 
 # Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
 # LDAP_FALLBACK = "normal"
