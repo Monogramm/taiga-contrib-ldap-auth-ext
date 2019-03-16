@@ -101,7 +101,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
-    superuser = false
+    superuser = False
 
     try:
         # has user logged in before?
@@ -110,8 +110,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         # create a new user
         user = user_model.objects.create(username = username_unique,
                                          email = email,
-                                         full_name = full_name, 
-                                         is_staff = superuser,
+                                         full_name = full_name,
                                          is_superuser = superuser)
         # Set local password to match LDAP (issues/21)
         user.set_password(password)
