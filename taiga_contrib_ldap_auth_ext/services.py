@@ -101,7 +101,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
-    superuser = false
+    superuser = False
 
     try:
         # has user logged in before?
