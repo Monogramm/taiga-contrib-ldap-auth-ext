@@ -9,7 +9,7 @@ setup(
     version = ":versiontools:taiga_contrib_ldap_auth_ext:",
     description = "The (extended) Taiga plugin for ldap authentication",
     long_description = "Extended Taiga.io plugin for LDAP authentication. This is a fork of ensky/taiga-contrib-ldap-auth which also retrieves the various contributions and other forks into one.",
-    download_url = 'https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/archive/v0.4.1.tar.gz',
+    download_url = 'https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/archive/v0.4.2.tar.gz',
     keywords = 'taiga, ldap, auth, plugin',
     author = 'madmath03',
     author_email = 'mathieu.brunot@monogramm.io',
