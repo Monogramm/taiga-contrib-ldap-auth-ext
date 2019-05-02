@@ -19,6 +19,6 @@ If possible, use [gitmoji](https://gitmoji.carloscuesta.me/) in your commit mess
 
 One may ask you to [squash your commits](http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html) too. This is used to "clean" your Pull Request before merging it (we don't want commits such as `fix tests`, `fix 2`, `fix 3`, etc.).
 
-Also, while creating your Pull Request on GitHub, you MUST write a description which gives the context and/or explains why you are creating it. If your Pull Request is related to one or several issues, you SHOULD reference them in your PR description.
+Also, while creating your Pull Request on GitHub, you MUST write a description which gives the context and/or explains why you are creating it. If your Pull Request is related to one or several issues, you SHOULD reference them in your PR description. See GitHub documentation on [how to close issues using keywords](https://help.github.com/en/articles/closing-issues-using-keywords).
 
 Thank you!
