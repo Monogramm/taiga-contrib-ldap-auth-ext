@@ -61,6 +61,9 @@ LDAP_USERNAME_ATTRIBUTE = 'uid'
 LDAP_EMAIL_ATTRIBUTE = 'mail'
 LDAP_FULL_NAME_ATTRIBUTE = 'displayName'
 
+# Option to not store the passwords in the local db
+#LDAP_SAVE_LOGIN_PASSWORD = False
+
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
 # Group search filter where $1 is the project slug and $2 is the role slug
 #LDAP_GROUP_SEARCH_FILTER = 'CN=$2,OU=$1,OU=Groups,DC=example,DC=net'
