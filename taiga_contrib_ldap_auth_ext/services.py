@@ -29,6 +29,7 @@ FALLBACK = getattr(settings, 'LDAP_FALLBACK', 'normal')
 SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
 EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
 NAME_MAP = getattr(settings, 'LDAP_MAP_NAME', '')
+SAVE_USER_PASSWD = getattr(settings, 'LDAP_SAVE_LOGIN_PASSWORD', True)
 
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
 # Taiga super users group id
@@ -112,15 +113,21 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
                                          email = email,
                                          full_name = full_name,
                                          is_superuser = superuser)
-        # Set local password to match LDAP (issues/21)
-        user.set_password(password)
+        if SAVE_USER_PASSWD:
+            # Set local password to match LDAP (issues/21)
+            user.set_password(password)
+
         user.save()
 
         user_registered_signal.send(sender = user.__class__, user = user)
         send_register_email(user)
     else:
-        # Set local password to match LDAP (issues/21)
-        user.set_password(password)
+        if SAVE_USER_PASSWD:
+            # Set local password to match LDAP (issues/21)
+            user.set_password(password)
+        else:
+            user.set_password(None)
+
         user.save()
         # update DB entry if LDAP field values differ
         if user.email != email or user.full_name != full_name:
