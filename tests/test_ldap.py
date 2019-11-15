@@ -11,13 +11,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from taiga_contrib_ldap_auth_ext import connector
+from unittest.mock import patch, Mock
+
 import pytest
 import sys
 
 sys.path.append("../taiga-back/")
 
-from unittest.mock import patch, Mock
-from taiga_contrib_ldap_auth_ext import connector
 
 def test_ldap_login_success():
     BASE_EMAIL = "@example.com"
@@ -39,7 +40,7 @@ def test_ldap_login_fail():
     with pytest.raises(connector.LDAPError) as e:
         login = "**userName**"
         password = "**password**"
-        auth_info = connector.login(login, password)
+        connector.login(login, password)
 
     assert e.value.status_code == 400
     assert "error_message" in e.value.detail
