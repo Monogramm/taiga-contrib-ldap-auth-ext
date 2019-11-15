@@ -16,6 +16,7 @@ from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIN
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
 
+
 class LDAPError(ConnectorBaseException):
     pass
 
@@ -33,7 +34,8 @@ SERVER = getattr(settings, "LDAP_SERVER", "")
 PORT = getattr(settings, "LDAP_PORT", "")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
-SEARCH_FILTER_ADDITIONAL = getattr(settings, "LDAP_SEARCH_FILTER_ADDITIONAL", "")
+SEARCH_FILTER_ADDITIONAL = getattr(
+    settings, "LDAP_SEARCH_FILTER_ADDITIONAL", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 
@@ -69,7 +71,8 @@ def login(username: str, password: str) -> tuple:
     else:
         use_ssl = False
     try:
-        server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = use_ssl, tls = tls)
+        server = Server(SERVER, port=PORT, get_info=NONE,
+                        use_ssl=use_ssl, tls=tls)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPConnectionError({"error_message": error})
@@ -89,22 +92,24 @@ def login(username: str, password: str) -> tuple:
         auto_bind = AUTO_BIND_TLS_BEFORE_BIND
 
     try:
-        c = Connection(server, auto_bind = auto_bind, client_strategy = SYNC, check_names = True,
-                       user = service_user, password = service_pass, authentication = service_auth)
+        c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
+                       user=service_user, password=service_pass, authentication=service_auth)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         raise LDAPConnectionError({"error_message": error})
 
     # search for user-provided login
-    search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
+    search_filter = '(|(%s=%s)(%s=%s))' % (
+        USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
     try:
-        c.search(search_base = SEARCH_BASE,
-                 search_filter = search_filter,
-                 search_scope = SUBTREE,
-                 attributes = [USERNAME_ATTRIBUTE, EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
-                 paged_size = 5)
+        c.search(search_base=SEARCH_BASE,
+                 search_filter=search_filter,
+                 search_scope=SUBTREE,
+                 attributes=[USERNAME_ATTRIBUTE,
+                             EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                 paged_size=5)
     except Exception as e:
         error = "LDAP login incorrect: %s" % e
         raise LDAPUserLoginError({"error_message": error})
@@ -117,7 +122,8 @@ def login(username: str, password: str) -> tuple:
 
     # handle multiple matches
     if len(c.response) > 1:
-        raise LDAPUserLoginError({"error_message": "LDAP login could not be determined."})
+        raise LDAPUserLoginError(
+            {"error_message": "LDAP login could not be determined."})
 
     # handle missing mandatory attributes
     raw_attributes = c.response[0].get('raw_attributes')
@@ -130,9 +136,9 @@ def login(username: str, password: str) -> tuple:
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = str(bytes(c.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-        Connection(server, auto_bind = auto_bind, client_strategy = SYNC,
-                               check_names = True, authentication = SIMPLE,
-                               user = dn, password = password)
+        Connection(server, auto_bind=auto_bind, client_strategy=SYNC,
+                   check_names=True, authentication=SIMPLE,
+                   user=dn, password=password)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPUserLoginError({"error_message": error})

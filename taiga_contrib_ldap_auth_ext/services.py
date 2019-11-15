@@ -35,6 +35,7 @@ SAVE_USER_PASSWD = getattr(settings, 'LDAP_SAVE_LOGIN_PASSWORD', True)
 # Taiga super users group id
 #GROUP_ADMIN = getattr(settings, 'LDAP_GROUP_ADMIN', '')
 
+
 def ldap_login_func(request):
     """
     Login a user using LDAP.
@@ -55,7 +56,8 @@ def ldap_login_func(request):
 
     try:
         # TODO: make sure these fields are sanitized before passing to LDAP server!
-        username, email, full_name = connector.login(login = login_input, password = password_input)
+        username, email, full_name = connector.login(
+            username=login_input, password=password_input)
     except connector.LDAPUserLoginError as ldap_error:
         # If no fallback authentication is specified, raise the original LDAP error
         if not FALLBACK:
@@ -74,7 +76,8 @@ def ldap_login_func(request):
             })
     else:
         # LDAP Auth successful
-        user = register_or_update(username = username, email = email, full_name = full_name, password = password_input)
+        user = register_or_update(
+            username=username, email=email, full_name=full_name, password=password_input)
         data = make_auth_response_data(user)
         return data
 
@@ -92,7 +95,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     username_unique = username
     if SLUGIFY:
-        username_unique = SLUGIFY(username)        
+        username_unique = SLUGIFY(username)
 
     if EMAIL_MAP:
         email = EMAIL_MAP(email)
@@ -106,20 +109,20 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     try:
         # has user logged in before?
-        user = user_model.objects.get(username = username_unique)
+        user = user_model.objects.get(username=username_unique)
     except user_model.DoesNotExist:
         # create a new user
-        user = user_model.objects.create(username = username_unique,
-                                         email = email,
-                                         full_name = full_name,
-                                         is_superuser = superuser)
+        user = user_model.objects.create(username=username_unique,
+                                         email=email,
+                                         full_name=full_name,
+                                         is_superuser=superuser)
         if SAVE_USER_PASSWD:
             # Set local password to match LDAP (issues/21)
             user.set_password(password)
 
         user.save()
 
-        user_registered_signal.send(sender = user.__class__, user = user)
+        user_registered_signal.send(sender=user.__class__, user=user)
         send_register_email(user)
     else:
         if SAVE_USER_PASSWD:
@@ -131,8 +134,8 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         user.save()
         # update DB entry if LDAP field values differ
         if user.email != email or user.full_name != full_name:
-            user_object = user_model.objects.filter(pk = user.pk)
-            user_object.update(email = email, full_name = full_name)
+            user_object = user_model.objects.filter(pk=user.pk)
+            user_object.update(email=email, full_name=full_name)
             user.refresh_from_db()
 
     return user
