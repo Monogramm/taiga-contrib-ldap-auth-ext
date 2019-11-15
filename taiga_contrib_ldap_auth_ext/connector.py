@@ -114,7 +114,7 @@ def login(login: str, password: str) -> tuple:
     # we are only interested in user objects in the response
     c.response = [r for r in c.response if 'raw_attributes' in r and 'dn' in r]
     # stop if no search results
-    if len(c.response) == 0:
+    if c.response:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
 
     # handle multiple matches
@@ -123,7 +123,7 @@ def login(login: str, password: str) -> tuple:
 
     # handle missing mandatory attributes
     raw_attributes = c.response[0].get('raw_attributes')
-    if len(raw_attributes.get(USERNAME_ATTRIBUTE)) == 0 or len(raw_attributes.get(EMAIL_ATTRIBUTE)) == 0 or len(raw_attributes.get(FULL_NAME_ATTRIBUTE)) == 0  :
+    if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(FULL_NAME_ATTRIBUTE):
         raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
     # attempt LDAP bind
