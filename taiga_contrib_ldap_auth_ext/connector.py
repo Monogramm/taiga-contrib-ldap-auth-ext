@@ -132,7 +132,7 @@ def login(login: str, password: str) -> tuple:
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = str(bytes(c.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-        user_conn = Connection(server, auto_bind = auto_bind, client_strategy = SYNC,
+        Connection(server, auto_bind = auto_bind, client_strategy = SYNC,
                                check_names = True, authentication = SIMPLE,
                                user = dn, password = password)
     except Exception as e:

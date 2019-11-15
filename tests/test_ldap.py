@@ -39,7 +39,7 @@ def test_ldap_login_fail():
     with pytest.raises(connector.LDAPError) as e:
         login = "**userName**"
         password = "**password**"
-        auth_info = connector.login(login, password)
+        connector.login(login, password)
 
     assert e.value.status_code == 400
     assert "error_message" in e.value.detail
