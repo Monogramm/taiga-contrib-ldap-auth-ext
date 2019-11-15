@@ -26,7 +26,7 @@ from . import connector
 
 FALLBACK = getattr(settings, 'LDAP_FALLBACK', 'normal')
 
-SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', '')
+SLUGIFY = getattr(settings, 'LDAP_MAP_USERNAME_TO_UID', slugify_uniquely)
 EMAIL_MAP = getattr(settings, 'LDAP_MAP_EMAIL', '')
 NAME_MAP = getattr(settings, 'LDAP_MAP_NAME', '')
 SAVE_USER_PASSWD = getattr(settings, 'LDAP_SAVE_LOGIN_PASSWORD', True)
