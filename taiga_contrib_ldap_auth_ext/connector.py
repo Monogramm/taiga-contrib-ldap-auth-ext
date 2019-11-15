@@ -45,7 +45,7 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
-def login(login: str, password: str) -> tuple:
+def login(username: str, password: str) -> tuple:
     """
     Connect to LDAP server, perform a search and attempt a bind.
 
@@ -96,7 +96,7 @@ def login(login: str, password: str) -> tuple:
         raise LDAPConnectionError({"error_message": error})
 
     # search for user-provided login
-    search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, login, EMAIL_ATTRIBUTE, login)
+    search_filter = '(|(%s=%s)(%s=%s))' % (USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
     try:
