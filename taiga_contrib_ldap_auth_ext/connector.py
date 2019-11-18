@@ -30,8 +30,8 @@ class LDAPUserLoginError(LDAPError):
 
 
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
-SERVER = getattr(settings, "LDAP_SERVER", "")
-PORT = getattr(settings, "LDAP_PORT", "")
+SERVER = getattr(settings, "LDAP_SERVER", "localhost")
+PORT = getattr(settings, "LDAP_PORT", "389")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
 SEARCH_FILTER_ADDITIONAL = getattr(
@@ -39,9 +39,9 @@ SEARCH_FILTER_ADDITIONAL = getattr(
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
 
-USERNAME_ATTRIBUTE = getattr(settings, "LDAP_USERNAME_ATTRIBUTE", "")
-EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "")
-FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "")
+USERNAME_ATTRIBUTE = getattr(settings, "LDAP_USERNAME_ATTRIBUTE", "uid")
+EMAIL_ATTRIBUTE = getattr(settings, "LDAP_EMAIL_ATTRIBUTE", "mail")
+FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "displayName")
 
 TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
