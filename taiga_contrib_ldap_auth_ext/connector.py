@@ -66,7 +66,8 @@ def login(username: str, password: str) -> tuple:
     if TLS_CERTS:
         tls = TLS_CERTS
 
-    server_ldap_list = []
+    # Dict with server key and connection value
+    server_ldap_dict = {}
 
     # Connect to the LDAP servers
     for ser in SERVERS:
@@ -77,7 +78,7 @@ def login(username: str, password: str) -> tuple:
         try:
             server = Server(ser, port=PORT, get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
-            server_ldap_list.append(server)
+            server_ldap_dict[server] = None
         except Exception as e:
             error = "Error connecting to LDAP server: %s" % e
             raise LDAPConnectionError({"error_message": error})
@@ -96,13 +97,11 @@ def login(username: str, password: str) -> tuple:
     if START_TLS:
         auto_bind = AUTO_BIND_TLS_BEFORE_BIND
 
-    list_with_connections = []
-
-    for ldap_value in server_ldap_list:
+    for ldap_value in server_ldap_dict:
         try:
             c = Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
                            user=service_user, password=service_pass, authentication=service_auth)
-            list_with_connections.append(c)
+            server_ldap_dict[ldap_value] = c
         except Exception as e:
             error = "Error connecting to LDAP server: %s" % e
             raise LDAPConnectionError({"error_message": error})
@@ -113,31 +112,34 @@ def login(username: str, password: str) -> tuple:
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
-    for con, server in list_with_connections, server_ldap_list:
+    for ldap_value in server_ldap_dict:
+        if server_ldap_dict[ldap_value] is None:
+            continue
         try:
-            con.search(search_base=SEARCH_BASE,
-                     search_filter=search_filter,
-                     search_scope=SUBTREE,
-                     attributes=[USERNAME_ATTRIBUTE,
-                                 EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
-                     paged_size=5)
+            cur_connection = server_ldap_dict[ldap_value]
+            cur_connection.search(search_base=SEARCH_BASE,
+                                                search_filter=search_filter,
+                                                search_scope=SUBTREE,
+                                                attributes=[USERNAME_ATTRIBUTE,
+                                                            EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                                                paged_size=5)
         except Exception as e:
             error = "LDAP login incorrect: %s" % e
             raise LDAPUserLoginError({"error_message": error})
 
         # we are only interested in user objects in the response
-        con.response = [r for r in con.response if 'raw_attributes' in r and 'dn' in r]
+        cur_connection.response = [r for r in cur_connection.response if 'raw_attributes' in r and 'dn' in r]
         # stop if no search results
-        if not con.response:
+        if not cur_connection.response:
             raise LDAPUserLoginError({"error_message": "LDAP login not found"})
 
         # handle multiple matches
-        if len(con.response) > 1:
+        if len(cur_connection.response) > 1:
             raise LDAPUserLoginError(
                 {"error_message": "LDAP login could not be determined."})
 
         # handle missing mandatory attributes
-        raw_attributes = con.response[0].get('raw_attributes')
+        raw_attributes = cur_connection.response[0].get('raw_attributes')
         if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
                 FULL_NAME_ATTRIBUTE):
             raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
@@ -147,8 +149,8 @@ def login(username: str, password: str) -> tuple:
         email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
         full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
         try:
-            dn = str(bytes(con.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-            Connection(server, auto_bind=auto_bind, client_strategy=SYNC,
+            dn = str(bytes(cur_connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
+            Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
                        check_names=True, authentication=SIMPLE,
                        user=dn, password=password)
         except Exception as e:
