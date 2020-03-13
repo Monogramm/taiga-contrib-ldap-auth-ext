@@ -145,4 +145,4 @@ def login(username: str, password: str) -> tuple:
 
     # LDAP binding successful, but some values might have changed, or
     # this is the user's first login, so return them
-    return (username, email, full_name)
+    return username, email, full_name
