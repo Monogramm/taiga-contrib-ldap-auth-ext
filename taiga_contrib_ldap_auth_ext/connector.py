@@ -48,6 +48,16 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
+def connect_to_ldap_server(ldap_value, auto_bind, service_user, service_pass, service_auth):
+    try:
+        c = Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
+                       user=service_user, password=service_pass, authentication=service_auth)
+        return c
+    except Exception as e:
+        error = "Error connecting to LDAP server: %s" % e
+        raise LDAPConnectionError({"error_message": error})
+
+
 def login(username: str, password: str) -> tuple:
     """
     Connect to LDAP server, perform a search and attempt a bind.
@@ -97,15 +107,6 @@ def login(username: str, password: str) -> tuple:
     if START_TLS:
         auto_bind = AUTO_BIND_TLS_BEFORE_BIND
 
-    for ldap_value in server_ldap_dict:
-        try:
-            c = Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
-                           user=service_user, password=service_pass, authentication=service_auth)
-            server_ldap_dict[ldap_value] = c
-        except Exception as e:
-            error = "Error connecting to LDAP server: %s" % e
-            raise LDAPConnectionError({"error_message": error})
-
     # search for user-provided login
     search_filter = '(|(%s=%s)(%s=%s))' % (
         USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
@@ -113,16 +114,16 @@ def login(username: str, password: str) -> tuple:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
     for ldap_value in server_ldap_dict:
-        if server_ldap_dict[ldap_value] is None:
+        cur_connection = connect_to_ldap_server(ldap_value, auto_bind, service_user, service_pass, service_auth)
+        if cur_connection is None:
             continue
         try:
-            cur_connection = server_ldap_dict[ldap_value]
             cur_connection.search(search_base=SEARCH_BASE,
-                                                search_filter=search_filter,
-                                                search_scope=SUBTREE,
-                                                attributes=[USERNAME_ATTRIBUTE,
-                                                            EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
-                                                paged_size=5)
+                                  search_filter=search_filter,
+                                  search_scope=SUBTREE,
+                                  attributes=[USERNAME_ATTRIBUTE,
+                                              EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                                  paged_size=5)
         except Exception as e:
             error = "LDAP login incorrect: %s" % e
             raise LDAPUserLoginError({"error_message": error})
