@@ -48,14 +48,55 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
-def connect_to_ldap_server(ldap_value, auto_bind, service_user, service_pass, service_auth):
+def connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filter, password):
+    if server_ldap_dict[ldap_value] is None:
+        return
     try:
-        c = Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
-                       user=service_user, password=service_pass, authentication=service_auth)
-        return c
+        cur_connection = server_ldap_dict[ldap_value]
+        cur_connection.search(search_base=SEARCH_BASE,
+                              search_filter=search_filter,
+                              search_scope=SUBTREE,
+                              attributes=[USERNAME_ATTRIBUTE,
+                                          EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                              paged_size=5)
     except Exception as e:
-        error = "Error connecting to LDAP server: %s" % e
-        raise LDAPConnectionError({"error_message": error})
+        error_message = "LDAP login incorrect: %s" % e
+        raise LDAPUserLoginError({"error_message": error_message})
+    finally:
+        print(error_message)
+    # we are only interested in user objects in the response
+    cur_connection.response = [r for r in cur_connection.response if 'raw_attributes' in r and 'dn' in r]
+    # stop if no search results
+    if not cur_connection.response:
+        raise LDAPUserLoginError({"error_message": "LDAP login not found"})
+
+    # handle multiple matches
+    if len(cur_connection.response) > 1:
+        raise LDAPUserLoginError(
+            {"error_message": "LDAP login could not be determined."})
+
+    # handle missing mandatory attributes
+    raw_attributes = cur_connection.response[0].get('raw_attributes')
+    if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
+            FULL_NAME_ATTRIBUTE):
+        raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
+
+    # attempt LDAP bind
+    username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
+    email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
+    full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
+    try:
+        dn = str(bytes(cur_connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
+        Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
+                   check_names=True, authentication=SIMPLE,
+                   user=dn, password=password)
+    except Exception as e:
+        error = "LDAP bind failed: %s" % e
+        raise LDAPUserLoginError({"error_message": error})
+
+    # LDAP binding successful, but some values might have changed, or
+    # this is the user's first login, so return them
+    return username, email, full_name
 
 
 def login(username: str, password: str) -> tuple:
@@ -114,50 +155,11 @@ def login(username: str, password: str) -> tuple:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
     for ldap_value in server_ldap_dict:
-        cur_connection = connect_to_ldap_server(ldap_value, auto_bind, service_user, service_pass, service_auth)
-        if cur_connection is None:
+        try:
+            data = connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filter, password)
+        except Exception as e:
+            print("Connection to LDAP server was failed")
             continue
-        try:
-            cur_connection.search(search_base=SEARCH_BASE,
-                                  search_filter=search_filter,
-                                  search_scope=SUBTREE,
-                                  attributes=[USERNAME_ATTRIBUTE,
-                                              EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
-                                  paged_size=5)
-        except Exception as e:
-            error = "LDAP login incorrect: %s" % e
-            raise LDAPUserLoginError({"error_message": error})
-
-        # we are only interested in user objects in the response
-        cur_connection.response = [r for r in cur_connection.response if 'raw_attributes' in r and 'dn' in r]
-        # stop if no search results
-        if not cur_connection.response:
-            raise LDAPUserLoginError({"error_message": "LDAP login not found"})
-
-        # handle multiple matches
-        if len(cur_connection.response) > 1:
-            raise LDAPUserLoginError(
-                {"error_message": "LDAP login could not be determined."})
-
-        # handle missing mandatory attributes
-        raw_attributes = cur_connection.response[0].get('raw_attributes')
-        if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
-                FULL_NAME_ATTRIBUTE):
-            raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
-
-        # attempt LDAP bind
-        username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
-        email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
-        full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
-        try:
-            dn = str(bytes(cur_connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-            Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
-                       check_names=True, authentication=SIMPLE,
-                       user=dn, password=password)
-        except Exception as e:
-            error = "LDAP bind failed: %s" % e
-            raise LDAPUserLoginError({"error_message": error})
-
-        # LDAP binding successful, but some values might have changed, or
-        # this is the user's first login, so return them
-        return username, email, full_name
+        if data is not None:
+            break
+        raise LDAPUserLoginError({"error_message": "No one server accepted LDAP connection"})
