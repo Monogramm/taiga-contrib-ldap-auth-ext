@@ -38,16 +38,6 @@ if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
       log "Changing initial admin password"
       python manage.py shell < /changeadminpasswd.py
     fi
-
-
-    #########################################
-    ## SLACK
-    #########################################
-
-    log "Run contrib Slack plugin migrations to generate the new needed table"
-    python manage.py migrate taiga_contrib_slack
-
-    #########################################
   fi
 
   # TODO This works... but requires to persist the backend to keep track of already executed migrations
@@ -69,7 +59,7 @@ python manage.py collectstatic --noinput > /dev/null
 log "Start gunicorn server"
 GUNICORN_TIMEOUT="${GUINCORN_TIMEOUT:-60}"
 GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
-GUNICORN_LOGLEVEL="${GUNICORN_LOGLEVEL:-info}"
+GUNICORN_LOGLEVEL="${GUNICORN_LOGLEVEL:-debug}"
 
 GUNICORN_ARGS="--pythonpath=. -t ${GUNICORN_TIMEOUT} --workers ${GUNICORN_WORKERS} --bind ${BIND_ADDRESS}:${PORT} --log-level ${GUNICORN_LOGLEVEL}"
 
