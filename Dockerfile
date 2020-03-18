@@ -4,15 +4,7 @@ FROM monogramm/docker-taiga-back-base:4.2-alpine
 LABEL maintainer="Monogramm maintainers <opensource at monogramm dot io>"
 
 # Taiga additional properties
-ENV TAIGA_ENABLE_SLACK=False \
-    TAIGA_ENABLE_GITLAB_AUTH=False \
-    TAIGA_GITLAB_AUTH_URL=https://gitlab.com \
-    TAIGA_GITLAB_AUTH_CLIENT_ID= \
-    TAIGA_GITLAB_AUTH_CLIENT_SECRET= \
-    TAIGA_ENABLE_GITHUB_AUTH=False \
-    TAIGA_GITHUB_AUTH_CLIENT_ID= \
-    TAIGA_GITHUB_AUTH_CLIENT_SECRET= \
-    TAIGA_ENABLE_LDAP=False \
+ENV TAIGA_ENABLE_LDAP=False \
     TAIGA_LDAP_USE_TLS=True \
     TAIGA_LDAP_SERVER= \
     TAIGA_LDAP_PORT=389 \
@@ -30,8 +22,6 @@ COPY entrypoint.sh ./
 COPY local.py /taiga/
 
 # Fix entrypoint permissions
-# Install Slack/Mattermost extension
-# Install GitLab Auth extension
 # Install LDAP extension
 RUN set -ex; \
     chmod 755 /entrypoint.sh; \
