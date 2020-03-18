@@ -148,14 +148,6 @@ services:
       - TAIGA_EVENTS_ENABLED=True
       - TAIGA_EVENTS_HOST=taiga_events
       - TAIGA_EVENTS_PORT=8888
-      ### Additional parameters
-      # GitLab
-      - TAIGA_ENABLE_GITLAB_AUTH=${TAIGA_ENABLE_GITLAB_AUTH}
-      - TAIGA_GITLAB_AUTH_URL=${TAIGA_GITLAB_AUTH_URL}
-      - TAIGA_GITLAB_AUTH_CLIENT_ID=${TAIGA_GITLAB_AUTH_CLIENT_ID}
-      # GitHub
-      - TAIGA_ENABLE_GITHUB_AUTH=${TAIGA_ENABLE_GITHUB_AUTH}
-      - TAIGA_GITHUB_AUTH_CLIENT_ID=${TAIGA_GITHUB_AUTH_CLIENT_ID}
 
   # To disable taiga-events, comment all the following lines:
   taiga_rabbit:
