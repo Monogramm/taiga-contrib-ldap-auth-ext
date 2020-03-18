@@ -26,9 +26,7 @@ ENV TAIGA_ENABLE_SLACK=False \
     TAIGA_LDAP_FALLBACK=normal
 
 # Erase original entrypoint and conf with custom one
-COPY entrypoint.sh /
-COPY ../../taiga-contrib-ldap-auth-ext /usr/local/lib/python3.6/site-packages/
-
+COPY entrypoint.sh ./
 
 # Fix entrypoint permissions
 # Install Slack/Mattermost extension
@@ -41,5 +39,7 @@ RUN set -ex; \
     LC_ALL=C pip install --no-cache-dir taiga-contrib-github-auth; \
     LC_ALL=C pip install --no-cache-dir taiga-contrib-ldap-auth-ext
 
+RUN ls -a /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
+COPY . /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
 # Backend healthcheck
 HEALTHCHECK CMD curl --fail http://127.0.0.1:8001/api/v1/ || exit 1

@@ -16,7 +16,9 @@ services:
 
   taiga_back:
     # For CI or local modifications
-    build: ./back
+    build:
+      context: .
+      dockerfile: Dockerfile
     # For production
     #image: monogramm/docker-taiga-back:3.3-alpine
     hostname: ${HOSTNAME}
