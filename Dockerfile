@@ -1,5 +1,5 @@
 #TODO: How to give ability to another version and variant?
-FROM monogramm/docker-taiga-back-base:3.3-alpine
+FROM monogramm/docker-taiga-back-base:4.2-alpine
 
 LABEL maintainer="Monogramm maintainers <opensource at monogramm dot io>"
 
@@ -27,6 +27,7 @@ ENV TAIGA_ENABLE_SLACK=False \
 
 # Erase original entrypoint and conf with custom one
 COPY entrypoint.sh ./
+COPY local.py /taiga/
 
 # Fix entrypoint permissions
 # Install Slack/Mattermost extension
@@ -34,9 +35,6 @@ COPY entrypoint.sh ./
 # Install LDAP extension
 RUN set -ex; \
     chmod 755 /entrypoint.sh; \
-    LC_ALL=C pip install --no-cache-dir taiga-contrib-slack; \
-    LC_ALL=C pip install --no-cache-dir taiga-contrib-gitlab-auth-official; \
-    LC_ALL=C pip install --no-cache-dir taiga-contrib-github-auth; \
     LC_ALL=C pip install --no-cache-dir taiga-contrib-ldap-auth-ext
 
 COPY . /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext

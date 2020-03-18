@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     # For production
-    #image: monogramm/docker-taiga-back:3.3-alpine
+    #image: monogramm/docker-taiga-back:4.2-alpine
     hostname: ${HOSTNAME}
     container_name: taiga_back
     #restart: always
@@ -78,17 +78,6 @@ services:
       #- REDIS_HOST=taiga_redis
       #- REDIS_PORT=6379
       ### Additional parameters
-      # Slack
-      - TAIGA_ENABLE_SLACK=True
-      # GitLab
-      - TAIGA_ENABLE_GITLAB_AUTH=${TAIGA_ENABLE_GITLAB_AUTH}
-      - TAIGA_GITLAB_AUTH_URL=${TAIGA_GITLAB_AUTH_URL}
-      - TAIGA_GITLAB_AUTH_CLIENT_ID=${TAIGA_GITLAB_AUTH_CLIENT_ID}
-      - TAIGA_GITLAB_AUTH_CLIENT_SECRET=${TAIGA_GITLAB_AUTH_CLIENT_SECRET}
-      # GitHub
-      - TAIGA_ENABLE_GITHUB_AUTH=${TAIGA_ENABLE_GITHUB_AUTH}
-      - TAIGA_GITHUB_AUTH_CLIENT_ID=${TAIGA_GITHUB_AUTH_CLIENT_ID}
-      - TAIGA_GITHUB_AUTH_CLIENT_SECRET=${TAIGA_GITHUB_AUTH_CLIENT_SECRET}
       # LDAP Settings
       - TAIGA_ENABLE_LDAP=${TAIGA_ENABLE_LDAP}
       - TAIGA_LDAP_USE_TLS=True
@@ -106,7 +95,7 @@ services:
     # For CI or local modifications
     #build: ./front
     # For production
-    image: monogramm/docker-taiga-front:3.3-alpine
+    image: monogramm/docker-taiga-front:4.2-alpine
     hostname: ${HOSTNAME}
     container_name: taiga_front
     #restart: always

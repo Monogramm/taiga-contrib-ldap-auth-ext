@@ -3,7 +3,6 @@ set -e
 
 log() {
   echo "[$(date +%Y-%m-%dT%H:%M:%S%:z)] $@"
-  echo "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
 }
 
 # Sleep when asked to, to allow the database time to start
