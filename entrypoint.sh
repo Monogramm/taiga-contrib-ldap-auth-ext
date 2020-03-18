@@ -3,6 +3,7 @@ set -e
 
 log() {
   echo "[$(date +%Y-%m-%dT%H:%M:%S%:z)] $@"
+  echo "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
 }
 
 # Sleep when asked to, to allow the database time to start
@@ -33,6 +34,7 @@ if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
     log "Configuring initial project templates"
     python manage.py loaddata initial_project_templates
 
+    # shellcheck disable=SC2070
     if [ -n $TAIGA_ADMIN_PASSWORD ]; then
       log "Changing initial admin password"
       python manage.py shell < /changeadminpasswd.py
@@ -81,7 +83,7 @@ if [ -n  "${GUNICORN_KEYFILE}" ]; then
 fi
 
 if [ "$1" == "gunicorn" ]; then
-  exec "$@" $GUNICORN_ARGS
+  exec "$@" "$GUNICORN_ARGS"
 else
   exec "$@"
 fi

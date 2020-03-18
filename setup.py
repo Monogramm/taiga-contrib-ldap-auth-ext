@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages
 
+print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 setup(
     name='taiga-contrib-ldap-auth-ext',
     version=":versiontools:taiga_contrib_ldap_auth_ext:",
