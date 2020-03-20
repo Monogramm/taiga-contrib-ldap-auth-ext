@@ -91,6 +91,11 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     :returns: User
     """
+    print("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW", file=sys.stderr)
+    print(username, file=sys.stderr)
+    print(email, file=sys.stderr)
+    print(full_name, file=sys.stderr)
+    print(password, file=sys.stderr)
     user_model = apps.get_model('users', 'User')
 
     username_unique = username
