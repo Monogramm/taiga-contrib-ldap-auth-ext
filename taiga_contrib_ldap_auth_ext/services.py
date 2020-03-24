@@ -53,6 +53,7 @@ def ldap_login_func(request):
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
     password_input = request.DATA.get('password', None)
+
     try:
         # TODO: make sure these fields are sanitized before passing to LDAP server!
         username, email, full_name = connector.login(
