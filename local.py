@@ -31,8 +31,9 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     LDAP_SERVER = os.getenv('TAIGA_LDAP_SERVER')
     LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
 
-    # Full DN of the service account use to connect to LDAP server and search for login user's account entry
-    # If LDAP_BIND_DN is not specified, or is blank, then an anonymous bind is attempated
+    # Full DN of the service account.
+    # Use to connect to LDAP server and search for login user's account entry
+    # If LDAP_BIND_DN is not specified or blank, then an anonymous bind is attempated
     LDAP_BIND_DN = os.getenv('TAIGA_LDAP_BIND_DN')
     LDAP_BIND_PASSWORD = os.getenv('TAIGA_LDAP_BIND_PASSWORD')
 
@@ -41,10 +42,10 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     LDAP_SEARCH_BASE = os.getenv('TAIGA_LDAP_BASE_DN')
 
     # Additional search criteria to the filter (will be ANDed)
-    #LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
+    # LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
 
     # Names of attributes to get username, e-mail and full name values from
-    # These fields need to have a value in LDAP 
+    # These fields need to have a value in LDAP
     LDAP_USERNAME_ATTRIBUTE = os.getenv('TAIGA_LDAP_USERNAME_ATTRIBUTE')
     LDAP_EMAIL_ATTRIBUTE = os.getenv('TAIGA_LDAP_EMAIL_ATTRIBUTE')
     LDAP_FULL_NAME_ATTRIBUTE = os.getenv('TAIGA_LDAP_FULL_NAME_ATTRIBUTE')
@@ -53,7 +54,7 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     if os.getenv('TAIGA_LDAP_SAVE_LOGIN_PASSWORD').lower() == 'false':
         LDAP_SAVE_LOGIN_PASSWORD = False
 
-    # Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
+    # Fallback on normal authentication method if this LDAP auth fails.
     LDAP_FALLBACK = os.getenv('TAIGA_LDAP_FALLBACK')
 
     # Function to map LDAP username to local DB user unique identifier.
@@ -67,6 +68,5 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
 
     LDAP_MAP_USERNAME_TO_UID = _ldap_slugify
 
-    ## For additional configuration options, look at:
+    # For additional configuration options, look at:
     # https://github.com/taigaio/taiga-back/blob/master/settings/local.py.example
-
