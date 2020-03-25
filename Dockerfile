@@ -5,7 +5,7 @@ LABEL maintainer="Monogramm maintainers <opensource at monogramm dot io>"
 # Taiga additional properties
 ENV TAIGA_ENABLE_LDAP=False \
     TAIGA_LDAP_USE_TLS=True \
-    TAIGA_LDAP_SERVER= \
+    TAIGA_LDAP_SERVERS= \
     TAIGA_LDAP_PORT=389 \
     TAIGA_LDAP_BIND_DN= \
     TAIGA_LDAP_BIND_PASSWORD= \
@@ -17,15 +17,17 @@ ENV TAIGA_ENABLE_LDAP=False \
     TAIGA_LDAP_FALLBACK=normal
 
 # Erase original entrypoint and conf with custom one
-COPY entrypoint.sh ./
 COPY local.py /taiga/
+COPY entrypoint.sh ./
+
+#CMD sudo python3 setup.py bdist_wheel;
+
+COPY dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl ./
 # Fix entrypoint permissions
 # Install LDAP extension
 RUN set -ex; \
     chmod 755 /entrypoint.sh; \
-    LC_ALL=C pip install --no-cache-dir taiga-contrib-ldap-auth-ext; \
-    rm -r /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
-
-COPY . /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
+    LC_ALL=C pip install --no-cache-dir taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl;
+    #rm -r /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
 # Backend healthcheck
 HEALTHCHECK CMD curl --fail http://127.0.0.1:8001/api/v1/ || exit 1

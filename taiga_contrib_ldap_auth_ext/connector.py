@@ -31,7 +31,7 @@ class LDAPUserLoginError(LDAPError):
 
 
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
-SERVERS = getattr(settings, "LDAP_SERVER", "localhost")
+SERVERS = getattr(settings, "LDAP_SERVERS", "localhost")
 PORT = getattr(settings, "LDAP_PORT", "389")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
@@ -48,12 +48,17 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
-def connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filter, password):
-    if server_ldap_dict[ldap_value] is None:
+def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, password):
+    if connection is None:
         return
     try:
-        cur_connection = server_ldap_dict[ldap_value]
-        cur_connection.search(search_base=SEARCH_BASE,
+        print(SEARCH_BASE, flush=True)
+        print(search_filter, flush=True)
+        print(SUBTREE, flush=True)
+        print(USERNAME_ATTRIBUTE, flush=True)
+        print(EMAIL_ATTRIBUTE, flush=True)
+        print(FULL_NAME_ATTRIBUTE, flush=True)
+        connection.search(search_base=SEARCH_BASE,
                               search_filter=search_filter,
                               search_scope=SUBTREE,
                               attributes=[USERNAME_ATTRIBUTE,
@@ -65,18 +70,20 @@ def connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filte
     finally:
         print(error_message, file=sys.stderr)
     # we are only interested in user objects in the response
-    cur_connection.response = [r for r in cur_connection.response if 'raw_attributes' in r and 'dn' in r]
+    print('3', flush=True)
+    connection.response = [r for r in connection.response if 'raw_attributes' in r and 'dn' in r]
+    print('4', flush=True)
     # stop if no search results
-    if not cur_connection.response:
+    if not connection.response:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
 
     # handle multiple matches
-    if len(cur_connection.response) > 1:
+    if len(connection.response) > 1:
         raise LDAPUserLoginError(
             {"error_message": "LDAP login could not be determined."})
 
     # handle missing mandatory attributes
-    raw_attributes = cur_connection.response[0].get('raw_attributes')
+    raw_attributes = connection.response[0].get('raw_attributes')
     if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
             FULL_NAME_ATTRIBUTE):
         raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
@@ -86,10 +93,14 @@ def connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filte
     email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
-        dn = str(bytes(cur_connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
+        dn = str(bytes(connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
+        print(dn, flush=True)
+        print("before connection", flush=True)
+        print(ldap_value, flush=True)
         Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
                    check_names=True, authentication=SIMPLE,
                    user=dn, password=password)
+        print("after connection",flush=True)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPUserLoginError({"error_message": error})
@@ -114,18 +125,20 @@ def login(username: str, password: str) -> tuple:
         tls = TLS_CERTS
 
     # Dict with server key and connection value
-    server_ldap_dict = {}
-
+    server_ldap_list = []
     # Connect to the LDAP servers
-    for ser in SERVERS:
+    servers_list = SERVERS.split(',')
+    for ser in servers_list:
+        if len(ser) <=10:
+            continue
         if ser.lower().startswith("ldaps://"):
             use_ssl = True
         else:
             use_ssl = False
         try:
-            server = Server(ser, port=PORT, get_info=NONE,
+            server = Server(ser, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
-            server_ldap_dict[server] = None
+            server_ldap_list.append(server)
         except Exception as e:
             error = "Error connecting to LDAP server: %s" % e
             raise LDAPConnectionError({"error_message": error})
@@ -150,15 +163,14 @@ def login(username: str, password: str) -> tuple:
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
-    for ldap_value in server_ldap_dict:
+    for server in server_ldap_list:
         try:
-            c = Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
+            c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
                            user=service_user, password=service_pass, authentication=service_auth)
-            server_ldap_dict[ldap_value] = c
-            data = connect_to_ldap_server(ldap_value, server_ldap_dict, auto_bind, search_filter, password)
+            data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
         except Exception as e:
-            print("Connection to LDAP server was failed", file=sys.stderr)
+            print("Connection to LDAP server was failed", flush=True)
             continue
         if data is not None:
             break
-        raise LDAPUserLoginError({"error_message": "No one server accepted LDAP connection"})
+    raise LDAPUserLoginError({"error_message": "No one server accepted LDAP connection"})

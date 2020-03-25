@@ -28,7 +28,7 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     else:
         LDAP_START_TLS = False
 
-    LDAP_SERVER = os.getenv('TAIGA_LDAP_SERVER')
+    LDAP_SERVERS = os.getenv('TAIGA_LDAP_SERVERS')
     LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
 
     # Full DN of the service account use to connect to LDAP server and search for login user's account entry

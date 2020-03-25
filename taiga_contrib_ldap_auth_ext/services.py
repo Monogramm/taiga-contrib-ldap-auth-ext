@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import sys
 
 from django.db import transaction as tx
 from django.conf import settings
@@ -53,7 +54,6 @@ def ldap_login_func(request):
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
     password_input = request.DATA.get('password', None)
-
     try:
         # TODO: make sure these fields are sanitized before passing to LDAP server!
         username, email, full_name = connector.login(
@@ -91,11 +91,6 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     :returns: User
     """
-    print("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW", file=sys.stderr)
-    print(username, file=sys.stderr)
-    print(email, file=sys.stderr)
-    print(full_name, file=sys.stderr)
-    print(password, file=sys.stderr)
     user_model = apps.get_model('users', 'User')
 
     username_unique = username
@@ -128,7 +123,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         user.save()
 
         user_registered_signal.send(sender=user.__class__, user=user)
-        send_register_email(user)
+        #send_register_email(user)
     else:
         if SAVE_USER_PASSWD:
             # Set local password to match LDAP (issues/21)
