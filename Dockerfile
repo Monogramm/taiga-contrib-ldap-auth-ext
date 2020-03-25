@@ -20,7 +20,8 @@ ENV TAIGA_ENABLE_LDAP=False \
 COPY local.py /taiga/
 COPY entrypoint.sh ./
 
-#CMD sudo python3 setup.py bdist_wheel;
+RUN set -ex ; \
+    python3 setup.py bdist_wheel;
 
 COPY dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl ./
 # Fix entrypoint permissions
