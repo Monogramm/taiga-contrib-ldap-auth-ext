@@ -123,7 +123,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         user.save()
 
         user_registered_signal.send(sender=user.__class__, user=user)
-        #send_register_email(user)
+        send_register_email(user)
     else:
         if SAVE_USER_PASSWD:
             # Set local password to match LDAP (issues/21)
