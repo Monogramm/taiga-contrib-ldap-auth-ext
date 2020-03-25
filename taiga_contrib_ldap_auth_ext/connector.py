@@ -52,12 +52,7 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
     if connection is None:
         return
     try:
-        print(SEARCH_BASE, flush=True)
-        print(search_filter, flush=True)
-        print(SUBTREE, flush=True)
-        print(USERNAME_ATTRIBUTE, flush=True)
-        print(EMAIL_ATTRIBUTE, flush=True)
-        print(FULL_NAME_ATTRIBUTE, flush=True)
+        print(connection.response, flush=True)
         connection.search(search_base=SEARCH_BASE,
                               search_filter=search_filter,
                               search_scope=SUBTREE,
@@ -66,9 +61,8 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
                               paged_size=5)
     except Exception as e:
         error_message = "LDAP login incorrect: %s" % e
+        print(error_message, flush=True)
         raise LDAPUserLoginError({"error_message": error_message})
-    finally:
-        print(error_message, file=sys.stderr)
     # we are only interested in user objects in the response
     print('3', flush=True)
     connection.response = [r for r in connection.response if 'raw_attributes' in r and 'dn' in r]
