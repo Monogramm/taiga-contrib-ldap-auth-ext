@@ -21,14 +21,19 @@ COPY local.py /taiga/
 COPY entrypoint.sh ./
 
 RUN set -ex ; \
-    python3 setup.py bdist_wheel;
+    mkdir /usr/src/taiga-contrib-ldap-auth-ext;
+
+COPY . /usr/src/taiga-contrib-ldap-auth-ext/
+
+RUN set -ex ; \
+    python /usr/src/taiga-contrib-ldap-auth-ext/setup.py bdist_wheel;
 
 COPY dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl ./
 # Fix entrypoint permissions
 # Install LDAP extension
 RUN set -ex; \
     chmod 755 /entrypoint.sh; \
-    LC_ALL=C pip install --no-cache-dir taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl;
+    LC_ALL=C pip install --no-cache-dir /usr/src/taiga-contrib-ldap-auth-ext/dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl;
     #rm -r /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
 # Backend healthcheck
 HEALTHCHECK CMD curl --fail http://127.0.0.1:8001/api/v1/ || exit 1

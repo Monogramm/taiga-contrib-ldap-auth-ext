@@ -135,9 +135,6 @@ services:
       - TAIGA_FEEDBACK_ENABLED=true
       - TAIGA_SUPPORT_URL=https://tree.taiga.io/support
       - TAIGA_PRIVACY_POLICY_URL=
-      #- TAIGA_CONTRIB_PLUGINS=slack cookie-warning gitlab-auth github-auth
-      - TAIGA_GRAVATAR=true
-      - TAIGA_LOGIN_FORM_TYPE=ldap
       # Backend settings
       - TAIGA_BACK_HOST=taiga_back
       - TAIGA_BACK_PORT=8001
@@ -187,6 +184,30 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+
+  openldap:
+    image: osixia/openldap:latest
+#    environment:
+#      LDAP_LOG_LEVEL: ${LDAP_LOG_LEVEL}
+#      LDAP_ORGANISATION: ${LDAP_ORGANISATION}
+#      LDAP_DOMAIN: ${LDAP_DOMAIN}
+#      LDAP_BASE_DN: ${LDAP_BASE_DN}
+#      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+#      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD}
+#      LDAP_READONLY_USER: ${LDAP_READONLY_USER}
+#      LDAP_READONLY_USER_USERNAME: ${LDAP_READONLY_USER_USERNAME}
+#      LDAP_READONLY_USER_PASSWORD: ${LDAP_READONLY_USER_PASSWORD}
+#      LDAP_BACKEND: ${LDAP_BACKEND}
+#      LDAP_TLS: ${LDAP_TLS}
+#      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME}
+#      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME}
+#      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME}
+#      LDAP_TLS_ENFORCE: ${LDAP_TLS_ENFORCE}
+#      LDAP_TLS_CIPHER_SUITE: ${LDAP_TLS_CIPHER_SUITE}
+#      LDAP_TLS_VERIFY_CLIENT: ${LDAP_TLS_VERIFY_CLIENT}
+#      LDAP_REPLICATION: ${LDAP_REPLICATION}
+#      LDAP_REMOVE_CONFIG_AFTER_SETUP: ${LDAP_REMOVE_CONFIG_AFTER_SETUP}
+#      LDAP_SSL_HELPER_PREFIX: ${LDAP_SSL_HELPER_PREFIX}
   # To enable async mode, uncomment the following lines:
 #  taiga_redis:
 #    image: redis:4.0-alpine
