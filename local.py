@@ -28,6 +28,9 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     else:
         LDAP_START_TLS = False
 
+    # Full DN of the service account.
+    # Use to connect to LDAP server and search for login user's account entry
+    # If LDAP_BIND_DN is not specified or blank, then an anonymous bind is attempated
     LDAP_SERVERS = os.getenv('TAIGA_LDAP_SERVERS')
     LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
 
@@ -41,7 +44,7 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     LDAP_SEARCH_BASE = os.getenv('TAIGA_LDAP_BASE_DN')
 
     # Additional search criteria to the filter (will be ANDed)
-    #LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
+    # LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
 
     # Names of attributes to get username, e-mail and full name values from
     # These fields need to have a value in LDAP
@@ -67,5 +70,5 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
 
     LDAP_MAP_USERNAME_TO_UID = _ldap_slugify
 
-    ## For additional configuration options, look at:
+    # For additional configuration options, look at:
     # https://github.com/taigaio/taiga-back/blob/master/settings/local.py.example
