@@ -28,12 +28,14 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     else:
         LDAP_START_TLS = False
 
-    LDAP_SERVER = os.getenv('TAIGA_LDAP_SERVER')
-    LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
-
     # Full DN of the service account.
     # Use to connect to LDAP server and search for login user's account entry
     # If LDAP_BIND_DN is not specified or blank, then an anonymous bind is attempated
+    LDAP_SERVERS = os.getenv('TAIGA_LDAP_SERVERS')
+    LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
+
+    # Full DN of the service account use to connect to LDAP server and search for login user's account entry
+    # If LDAP_BIND_DN is not specified, or is blank, then an anonymous bind is attempated
     LDAP_BIND_DN = os.getenv('TAIGA_LDAP_BIND_DN')
     LDAP_BIND_PASSWORD = os.getenv('TAIGA_LDAP_BIND_PASSWORD')
 
@@ -54,7 +56,7 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     if os.getenv('TAIGA_LDAP_SAVE_LOGIN_PASSWORD').lower() == 'false':
         LDAP_SAVE_LOGIN_PASSWORD = False
 
-    # Fallback on normal authentication method if this LDAP auth fails.
+    # Fallback on normal authentication method if this LDAP auth fails. Uncomment to enable.
     LDAP_FALLBACK = os.getenv('TAIGA_LDAP_FALLBACK')
 
     # Function to map LDAP username to local DB user unique identifier.

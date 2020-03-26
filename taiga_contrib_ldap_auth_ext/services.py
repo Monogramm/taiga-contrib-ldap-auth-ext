@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import sys
 
 from django.db import transaction as tx
 from django.conf import settings
@@ -53,7 +54,6 @@ def ldap_login_func(request):
     # (or any other attribute)
     login_input = request.DATA.get('username', None)
     password_input = request.DATA.get('password', None)
-
     try:
         # TODO: make sure these fields are sanitized before passing to LDAP server!
         username, email, full_name = connector.login(
