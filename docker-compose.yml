@@ -34,6 +34,7 @@ services:
       - /srv/taiga/back/static:/usr/src/taiga-back/static
       # Taiga configuration directory. Makes it easier to change configuration with your own
       #- /srv/taiga/back/conf:/taiga
+      - /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     environment:
@@ -81,7 +82,7 @@ services:
       # LDAP Settings
       - TAIGA_ENABLE_LDAP=${TAIGA_ENABLE_LDAP}
       - TAIGA_LDAP_USE_TLS=False
-      - TAIGA_LDAP_SERVER=ldaps://${TAIGA_LDAP_DOMAIN}
+      - TAIGA_LDAP_SERVERS=ldaps://${TAIGA_LDAP_DOMAIN_1},ldaps://${TAIGA_LDAP_DOMAIN_2},ldaps://${TAIGA_LDAP_DOMAIN_3}
       - TAIGA_LDAP_PORT=636
       - TAIGA_LDAP_BIND_DN=${TAIGA_LDAP_BIND_DN}
       - TAIGA_LDAP_BIND_PASSWORD=${TAIGA_LDAP_BIND_PASSWORD}
@@ -134,10 +135,6 @@ services:
       - TAIGA_FEEDBACK_ENABLED=true
       - TAIGA_SUPPORT_URL=https://tree.taiga.io/support
       - TAIGA_PRIVACY_POLICY_URL=
-      - TAIGA_TOS_URL=
-      - TAIGA_GDPR_URL=
-      - TAIGA_MAX_UPLOAD_SIZE=104857600
-      - TAIGA_CONTRIB_PLUGINS=slack cookie-warning
       #- TAIGA_CONTRIB_PLUGINS=slack cookie-warning gitlab-auth github-auth
       - TAIGA_GRAVATAR=true
       - TAIGA_LOGIN_FORM_TYPE=ldap
@@ -178,6 +175,18 @@ services:
       - TAIGA_EVENTS_SECRET=${TAIGA_SECRET}
       - TAIGA_EVENTS_PORT=8888
 
+  taiga_dev_mailer:
+    image: sj26/mailcatcher:latest
+    hostname: taiga_dev_mailer
+    container_name: taiga_dev_mailer
+    restart: always
+    expose:
+      - 1025
+    ports:
+      - 1080:1080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
   # To enable async mode, uncomment the following lines:
 #  taiga_redis:
 #    image: redis:4.0-alpine
