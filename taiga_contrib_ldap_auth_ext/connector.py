@@ -94,7 +94,7 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
         Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
                    check_names=True, authentication=SIMPLE,
                    user=dn, password=password)
-        print("after connection",flush=True)
+        print("after connection", flush=True)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPUserLoginError({"error_message": error})
@@ -113,7 +113,6 @@ def login(username: str, password: str) -> tuple:
     login to LDAP fails.
     :returns: tuple (username, email, full_name)
     """
-
     tls = None
     if TLS_CERTS:
         tls = TLS_CERTS
@@ -122,15 +121,15 @@ def login(username: str, password: str) -> tuple:
     server_ldap_list = []
     # Connect to the LDAP servers
     servers_list = SERVERS.split(',')
-    for ser in servers_list:
-        if len(ser) <=10:
+    for server_address in servers_list:
+        if len(server_address) <= 10:
             continue
-        if ser.lower().startswith("ldaps://"):
+        if server_address.lower().startswith("ldaps://"):
             use_ssl = True
         else:
             use_ssl = False
         try:
-            server = Server(ser, port=int(PORT), get_info=NONE,
+            server = Server(server_address, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
             server_ldap_list.append(server)
         except Exception as e:
@@ -163,7 +162,7 @@ def login(username: str, password: str) -> tuple:
                            user=service_user, password=service_pass, authentication=service_auth)
             data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
         except Exception as e:
-            print("Connection to LDAP server was failed", flush=True)
+            print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
             continue
         if data is not None:
             break
