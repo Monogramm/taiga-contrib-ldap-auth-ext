@@ -28,7 +28,7 @@ COPY . /usr/src/taiga-contrib-ldap-auth-ext/
 RUN set -ex ; \
     python /usr/src/taiga-contrib-ldap-auth-ext/setup.py bdist_wheel;
 
-COPY dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl ./
+# COPY dist/taiga_contrib_ldap_auth_ext-0.4.4-py3-none-any.whl /usr/src/taiga-contrib-ldap-auth-ext/dist/
 # Fix entrypoint permissions
 # Install LDAP extension
 RUN set -ex; \
