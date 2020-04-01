@@ -166,4 +166,4 @@ def login(username: str, password: str) -> tuple:
             continue
         if data is not None:
             break
-    raise LDAPUserLoginError({"error_message": "No one server accepted LDAP connection"})
+    raise LDAPUserLoginError({"error_message": "Unable to authenticate user to LDAP server"})
