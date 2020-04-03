@@ -87,13 +87,9 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
     try:
         dn = str(bytes(connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-        print(dn, flush=True)
-        print("before connection", flush=True)
-        print(ldap_value, flush=True)
         Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
                    check_names=True, authentication=SIMPLE,
                    user=dn, password=password)
-        print("after connection", flush=True)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPUserLoginError({"error_message": error})
@@ -128,7 +124,6 @@ def login(username: str, password: str) -> tuple:
         else:
             use_ssl = False
         try:
-            print(server_address, flush=True)
             server = Server(server_address, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
             server_ldap_list.append(server)
@@ -156,7 +151,6 @@ def login(username: str, password: str) -> tuple:
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
-    print(server_ldap_list, flush=True)
     for server in server_ldap_list:
         try:
             c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
@@ -164,7 +158,7 @@ def login(username: str, password: str) -> tuple:
             if c.result.description == 'success':
                 data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
             else:
-                print('Connection to LDAP server refused',flush=True)
+                print('Connection to LDAP server refused', flush=True)
         except Exception as e:
             print("Error: {0}".format(e), flush=True)
             print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
