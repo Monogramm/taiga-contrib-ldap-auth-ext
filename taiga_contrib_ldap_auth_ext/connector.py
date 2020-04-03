@@ -164,7 +164,7 @@ def login(username: str, password: str) -> tuple:
             if c.result.description == 'success':
                 data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
             else:
-                print('Connection to LDAP server refused')
+                print('Connection to LDAP server refused',flush=True)
         except Exception as e:
             print("Error: {0}".format(e), flush=True)
             print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
