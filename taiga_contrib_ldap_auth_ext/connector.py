@@ -102,10 +102,10 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
 def login(username: str, password: str) -> tuple:
     """
     Connect to LDAP server, perform a search and attempt a bind.
-    Can raise `exc.LDAPConnectionError` exceptions if the
-    connection to LDAP fails.
+
     Can raise `exc.LDAPUserLoginError` exceptions if the
     login to LDAP fails.
+    
     :returns: tuple (username, email, full_name)
     """
     tls = None
