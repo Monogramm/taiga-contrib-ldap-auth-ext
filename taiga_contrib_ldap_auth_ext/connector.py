@@ -52,7 +52,7 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
     if connection is None:
         return
     try:
-        print(connection.response, flush=True)
+        print(connection.__dict__, flush=True)
         connection.search(search_base=SEARCH_BASE,
                               search_filter=search_filter,
                               search_scope=SUBTREE,
@@ -64,9 +64,7 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
         print(error_message, flush=True)
         raise LDAPUserLoginError({"error_message": error_message})
     # we are only interested in user objects in the response
-    print('3', flush=True)
     connection.response = [r for r in connection.response if 'raw_attributes' in r and 'dn' in r]
-    print('4', flush=True)
     # stop if no search results
     if not connection.response:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
@@ -129,6 +127,7 @@ def login(username: str, password: str) -> tuple:
         else:
             use_ssl = False
         try:
+            print(server_address, flush=True)
             server = Server(server_address, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
             server_ldap_list.append(server)
@@ -162,6 +161,7 @@ def login(username: str, password: str) -> tuple:
                            user=service_user, password=service_pass, authentication=service_auth)
             data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
         except Exception as e:
+            print("Error: {0}".format(e), flush=True)
             print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
             continue
         if data is not None:
