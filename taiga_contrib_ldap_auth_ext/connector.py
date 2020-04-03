@@ -159,12 +159,12 @@ def login(username: str, password: str) -> tuple:
     print(server_ldap_list, flush=True)
     for server in server_ldap_list:
         try:
-            print('1111')
-            print('123123', flush=True)
             c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
                            user=service_user, password=service_pass, authentication=service_auth)
-            print(c.__dict__, flush=True)
-            data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
+            if c.result.description == 'success':
+                data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
+            else:
+                print('Connection to LDAP server refused')
         except Exception as e:
             print("Error: {0}".format(e), flush=True)
             print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
