@@ -5,7 +5,7 @@ LABEL maintainer="Monogramm maintainers <opensource at monogramm dot io>"
 # Taiga additional properties
 ENV TAIGA_ENABLE_LDAP=False \
     TAIGA_LDAP_USE_TLS=True \
-    TAIGA_LDAP_SERVERS= \
+    TAIGA_LDAP_SERVER= \
     TAIGA_LDAP_PORT=389 \
     TAIGA_LDAP_BIND_DN= \
     TAIGA_LDAP_BIND_PASSWORD= \

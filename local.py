@@ -31,7 +31,7 @@ if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
     # Full DN of the service account.
     # Use to connect to LDAP server and search for login user's account entry
     # If LDAP_BIND_DN is not specified or blank, then an anonymous bind is attempated
-    LDAP_SERVERS = os.getenv('TAIGA_LDAP_SERVERS')
+    LDAP_SERVER = os.getenv('TAIGA_LDAP_SERVER')
     LDAP_PORT = int(os.getenv('TAIGA_LDAP_PORT'))
 
     # Full DN of the service account use to connect to LDAP server and search for login user's account entry

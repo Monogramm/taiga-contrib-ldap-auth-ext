@@ -31,7 +31,7 @@ class LDAPUserLoginError(LDAPError):
 
 
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
-SERVERS = getattr(settings, "LDAP_SERVERS", "localhost")
+SERVER = getattr(settings, "LDAP_SERVER", "localhost")
 PORT = getattr(settings, "LDAP_PORT", "389")
 
 SEARCH_BASE = getattr(settings, "LDAP_SEARCH_BASE", "")
@@ -51,8 +51,9 @@ START_TLS = getattr(settings, "LDAP_START_TLS", False)
 def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, password):
     if connection is None:
         return
+
     try:
-        print(connection.__dict__, flush=True)
+
         connection.search(search_base=SEARCH_BASE,
                               search_filter=search_filter,
                               search_scope=SUBTREE,
@@ -118,7 +119,7 @@ def login(username: str, password: str) -> tuple:
     # Dict with server key and connection value
     server_ldap_list = []
     # Connect to the LDAP servers
-    servers_list = SERVERS.split(',')
+    servers_list = SERVER.split(',')
     for server_address in servers_list:
         if len(server_address) <= 10:
             continue
@@ -155,10 +156,14 @@ def login(username: str, password: str) -> tuple:
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
 
+    print(server_ldap_list, flush=True)
     for server in server_ldap_list:
         try:
+            print('1111')
+            print('123123', flush=True)
             c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
                            user=service_user, password=service_pass, authentication=service_auth)
+            print(c.__dict__, flush=True)
             data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
         except Exception as e:
             print("Error: {0}".format(e), flush=True)
