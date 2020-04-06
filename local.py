@@ -17,6 +17,14 @@ import ssl
 #########################################
 
 if os.getenv('TAIGA_ENABLE_LDAP').lower() == 'true':
+    # mailcatcher configuration
+    EMAIL_HOST = os.getenv('TAIGA_EMAIL_HOST')
+    EMAIL_HOST_USER = os.getenv('TAIGA_SMTP_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('TAIGA_EMAIL_PASS')
+    EMAIL_PORT = 1025
+    EMAIL_USE_TLS = False
+
+
     # see https://github.com/Monogramm/taiga-contrib-ldap-auth-ext
     print("Taiga contrib LDAP Auth Ext enabled", file=sys.stderr)
     INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
