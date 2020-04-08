@@ -185,7 +185,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
 
-  openldap:
+  taiga_openldap:
     image: osixia/openldap:latest
     container_name: taiga_openldap
     ports:
