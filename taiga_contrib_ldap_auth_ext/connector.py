@@ -79,19 +79,14 @@ def find_data_from_ldap_server(connection, search_filter):
 
     # handle missing mandatory attributes
     raw_attributes = connection.response[0].get('raw_attributes')
-    print("1" + str(raw_attributes.get(USERNAME_ATTRIBUTE)))
-    print("2" + str(raw_attributes.get(EMAIL_ATTRIBUTE)))
-    print("3" + str(raw_attributes.get(FULL_NAME_ATTRIBUTE)))
     if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
             FULL_NAME_ATTRIBUTE):
-        print('wtf???')
-        #raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
+        raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
     # attempt LDAP bind
     username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
     email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
-    full_name = 'boris'
     # LDAP binding successful, but some values might have changed, or
     # this is the user's first login, so return them
     return username, email, full_name
