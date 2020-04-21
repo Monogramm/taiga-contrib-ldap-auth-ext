@@ -2,21 +2,21 @@
 version: 1
 
 # Services base
-dn: ou=Services,{{ LDAP_BASE_DN }}
+dn: ou=Services,dc=openldap
 objectClass: top
 objectClass: organizationalUnit
 ou: Services
 
 
 # Groups base
-dn: ou=Groups,{{ LDAP_BASE_DN }}
+dn: ou=Groups,dc=openldap
 objectClass: top
 objectClass: organizationalUnit
 ou: Groups
 
 
 # Users base
-dn: ou=People,{{ LDAP_BASE_DN }}
+dn: ou=People,dc=openldap
 objectClass: top
 objectClass: organizationalUnit
 ou: People

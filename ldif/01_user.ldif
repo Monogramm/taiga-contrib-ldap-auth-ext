@@ -1,20 +1,10 @@
-# Create an initial structure for LDAP
 version: 1
 
-# Sample User
-dn: uid=test_user,ou=People,{{ LDAP_BASE_DN }}
-objectClass: extensibleObject
-objectClass: person
-objectClass: organizationalPerson
-objectClass: inetOrgPerson
+dn: uid=test_user2,ou=People,dc=openldap
+objectClass: mailAccount
+objectClass: uidObject
+objectClass: organizationalUnit
 objectClass: top
-cn: test_user
-sn: LDAP
-uid: test_user
-displayName: Taiga LDAP
-givenName: Taiga
-userPassword: test_user_password
-o: Taiga
-ou: Test
-title: Test User
-description: Sample Test User for Taiga LDAP contrib
+mail: test_user2
+ou: People
+uid: test_user2

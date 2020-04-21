@@ -48,18 +48,20 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
-def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, password):
+def find_data_from_ldap_server(connection, search_filter):
     if connection is None:
         return
 
     try:
-
+        print(SEARCH_BASE)
+        print(search_filter)
         connection.search(search_base=SEARCH_BASE,
-                              search_filter=search_filter,
-                              search_scope=SUBTREE,
-                              attributes=[USERNAME_ATTRIBUTE,
-                                          EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
-                              paged_size=5)
+                          search_filter=search_filter,
+                          search_scope=SUBTREE,
+                          attributes=[USERNAME_ATTRIBUTE,
+                                      EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                          paged_size=5)
+        print(connection.response)
     except Exception as e:
         error_message = "LDAP login incorrect: %s" % e
         print(error_message, flush=True)
@@ -77,23 +79,19 @@ def connect_to_ldap_server(ldap_value, connection, auto_bind, search_filter, pas
 
     # handle missing mandatory attributes
     raw_attributes = connection.response[0].get('raw_attributes')
+    print("1" + str(raw_attributes.get(USERNAME_ATTRIBUTE)))
+    print("2" + str(raw_attributes.get(EMAIL_ATTRIBUTE)))
+    print("3" + str(raw_attributes.get(FULL_NAME_ATTRIBUTE)))
     if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(
             FULL_NAME_ATTRIBUTE):
-        raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
+        print('wtf???')
+        #raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
     # attempt LDAP bind
     username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
     email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
     full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
-    try:
-        dn = str(bytes(connection.response[0].get('dn'), 'utf-8'), encoding='utf-8')
-        Connection(ldap_value, auto_bind=auto_bind, client_strategy=SYNC,
-                   check_names=True, authentication=SIMPLE,
-                   user=dn, password=password)
-    except Exception as e:
-        error = "LDAP bind failed: %s" % e
-        raise LDAPUserLoginError({"error_message": error})
-
+    full_name = 'boris'
     # LDAP binding successful, but some values might have changed, or
     # this is the user's first login, so return them
     return username, email, full_name
@@ -112,6 +110,8 @@ def login(username: str, password: str) -> tuple:
     if TLS_CERTS:
         tls = TLS_CERTS
 
+
+
     # Dict with server key and connection value
     server_ldap_list = []
     # Connect to the LDAP servers
@@ -124,7 +124,8 @@ def login(username: str, password: str) -> tuple:
         else:
             use_ssl = False
         try:
-            server = Server(server_address, port=int(PORT), get_info=NONE,
+            server_address = 'taiga_openldap'
+            server = Server(host=server_address, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
             server_ldap_list.append(server)
         except Exception as e:
@@ -155,10 +156,8 @@ def login(username: str, password: str) -> tuple:
         try:
             c = Connection(server, auto_bind=auto_bind, client_strategy=SYNC, check_names=True,
                            user=service_user, password=service_pass, authentication=service_auth)
-            if c.result.description == 'success':
-                data = connect_to_ldap_server(server, c, auto_bind, search_filter, password)
-            else:
-                print('Connection to LDAP server refused', flush=True)
+            data = find_data_from_ldap_server(c, search_filter)
+            print(data)
         except Exception as e:
             print("Error: {0}".format(e), flush=True)
             print("Failed to authenticate against LDAP {0}".format(server.name), flush=True)
