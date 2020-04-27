@@ -119,7 +119,6 @@ def login(username: str, password: str) -> tuple:
         else:
             use_ssl = False
         try:
-            server_address = 'taiga_openldap'
             server = Server(host=server_address, port=int(PORT), get_info=NONE,
                             use_ssl=use_ssl, tls=tls)
             server_ldap_list.append(server)
