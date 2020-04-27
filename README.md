@@ -33,7 +33,7 @@ Add the following to `settings/local.py`:
 INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
-LDAP_SERVER = 'ldap://ldap.example.com'
+LDAP_SERVER = ['ldap://ldap.example1.com','ldap://ldap.example2.com']
 LDAP_PORT = 389
 
 # Flag to enable LDAP with STARTTLS before bind

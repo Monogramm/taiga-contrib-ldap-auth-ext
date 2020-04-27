@@ -1,0 +1,209 @@
+version: '2'
+
+services:
+  taigadb:
+    image: postgres:10-alpine
+    container_name: taigadb
+    #restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - /srv/taiga/db/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=taiga
+      - POSTGRES_USER=taiga
+      - POSTGRES_PASSWORD=${TAIGA_DB_PWD}
+
+  taiga_back:
+    # For CI or local modifications
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-taiga-back-ldap:test
+    hostname: ${HOSTNAME}
+    container_name: taiga_back
+    #restart: always
+    depends_on:
+      - taigadb
+    ports:
+      - 8001:8001
+    volumes:
+      # Media and uploads directory. Required (or you will lose all uploads)
+      - /srv/taiga/back/media:/usr/src/taiga-back/media
+      - /srv/taiga/back/static:/usr/src/taiga-back/static
+      # Taiga configuration directory. Makes it easier to change configuration with your own
+      #- /srv/taiga/back/conf:/taiga
+      - /usr/local/lib/python3.6/site-packages/taiga_contrib_ldap_auth_ext
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      # Your hostname (REQUIRED)
+      - TAIGA_HOSTNAME=${HOSTNAME}:${PORT}
+      #- TAIGA_SSL=False
+      #- TAIGA_SSL_BY_REVERSE_PROXY=True
+      # Secret key for cryptographic signing
+      - TAIGA_SECRET_KEY=${TAIGA_SECRET}
+      # Admin account default password
+      - TAIGA_ADMIN_PASSWORD=${TAIGA_ADMIN_PASSWORD}
+      # Database settings
+      - TAIGA_DB_HOST=taigadb
+      - TAIGA_DB_NAME=taiga
+      - TAIGA_DB_USER=taiga
+      - TAIGA_DB_PASSWORD=${TAIGA_DB_PWD}
+      # when the db comes up from docker, it is usually too quick
+      - TAIGA_SLEEP=5
+      # To use an external SMTP for emails, fill in these values:
+      - TAIGA_ENABLE_EMAIL=True
+      - TAIGA_EMAIL_FROM=taiga@${TAIGA_EMAIL_DOMAIN}
+      - TAIGA_EMAIL_USE_TLS=False
+      - TAIGA_EMAIL_HOST=smtp.${TAIGA_EMAIL_DOMAIN}
+      - TAIGA_EMAIL_PORT=587
+      - TAIGA_EMAIL_USER=${TAIGA_SMTP_USER}
+      - TAIGA_EMAIL_PASS=${TAIGA_SMTP_PWD}
+      # Backend settings
+      - TAIGA_DEBUG=False
+      - TAIGA_PUBLIC_REGISTER_ENABLED=False
+      - TAIGA_FEEDBACK_ENABLED=True
+      - TAIGA_FEEDBACK_EMAIL=taiga@${TAIGA_EMAIL_DOMAIN}
+      # Events settings
+      - TAIGA_EVENTS_ENABLED=True
+      - RABBIT_USER=${TAIGA_RABBIT_USER}
+      - RABBIT_PASSWORD=${TAIGA_RABBIT_PASSWORD}
+      - RABBIT_VHOST='/'
+      - RABBIT_HOST=taiga_rabbit
+      - RABBIT_PORT=5672
+      # Async settings
+      # To enable async mode, uncomment the following lines:
+      #- TAIGA_ASYNC_ENABLED=True
+      #- REDIS_HOST=taiga_redis
+      #- REDIS_PORT=6379
+      ### Additional parameters
+      # LDAP Settings
+      - TAIGA_ENABLE_LDAP=${TAIGA_ENABLE_LDAP}
+      - TAIGA_LDAP_USE_TLS=false
+      - TAIGA_LDAP_SERVER=ldap://${TAIGA_LDAP_DOMAIN_1},ldap://${TAIGA_LDAP_DOMAIN_2},ldap://${TAIGA_LDAP_DOMAIN_3}
+      - TAIGA_LDAP_PORT=389
+      - TAIGA_LDAP_BIND_DN=${TAIGA_LDAP_BIND_DN}
+      - TAIGA_LDAP_BIND_PASSWORD=${TAIGA_LDAP_BIND_PASSWORD}
+      - TAIGA_LDAP_BASE_DN=ou=People,${TAIGA_LDAP_BASE_DN}
+      - TAIGA_LDAP_USERNAME_ATTRIBUTE=uid
+      - TAIGA_LDAP_EMAIL_ATTRIBUTE=mail
+      - TAIGA_LDAP_FULL_NAME_ATTRIBUTE=displayName
+      - TAIGA_LDAP_FALLBACK=normal
+
+  taiga_front:
+    # For CI or local modifications
+    #build: ./front
+    # For production
+    image: monogramm/docker-taiga-front:4.2-alpine
+    hostname: ${HOSTNAME}
+    container_name: taiga_front
+    #restart: always
+    depends_on:
+      - taiga_back
+      # To disable taiga-events, comment the following lines:
+      - taiga_events
+      - taiga_rabbit
+      # To enable async mode, uncomment the following lines:
+      #- taiga_redis
+    ports:
+      # If using SSL, uncomment 443 and comment out 80
+      - ${PORT}:80
+      #- ${PORT}:443
+    volumes:
+      # Media and uploads directory. Required for NGinx
+      - /srv/taiga/back/media:/usr/src/taiga-back/media:ro
+      - /srv/taiga/back/static:/usr/src/taiga-back/static:ro
+      # Taiga configuration directory. Makes it easier to change configuration with your own
+      #- /srv/taiga/front/conf:/taiga
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      # Your hostname (REQUIRED)
+      - TAIGA_HOSTNAME=${HOSTNAME}:${PORT}
+      #- TAIGA_SSL=True
+      #- TAIGA_SSL_BY_REVERSE_PROXY=True
+      #- TAIGA_BACKEND_SSL=True
+      # Frontend settings
+      - TAIGA_DEBUG=true
+      - TAIGA_DEBUG_INFO=true
+      - TAIGA_DEFAULT_LANGUAGE=en
+      - TAIGA_THEMES=taiga material-design high-contrast
+      - TAIGA_DEFAULT_THEME=taiga
+      - TAIGA_PUBLIC_REGISTER_ENABLED=false
+      - TAIGA_FEEDBACK_ENABLED=true
+      - TAIGA_SUPPORT_URL=https://tree.taiga.io/support
+      - TAIGA_PRIVACY_POLICY_URL=
+      - TAIGA_LOGIN_FORM_TYPE=ldap
+      # Backend settings
+      - TAIGA_BACK_HOST=taiga_back
+      - TAIGA_BACK_PORT=8001
+      # Events settings
+      - TAIGA_EVENTS_ENABLED=True
+      - TAIGA_EVENTS_HOST=taiga_events
+      - TAIGA_EVENTS_PORT=8888
+
+  # To disable taiga-events, comment all the following lines:
+  taiga_rabbit:
+    image: rabbitmq:3-alpine
+    hostname: taiga_rabbit
+    container_name: taiga_rabbit
+    #restart: always
+    ports:
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${TAIGA_RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${TAIGA_RABBIT_PASSWORD}
+
+  taiga_events:
+    image: monogramm/docker-taiga-events:alpine
+    container_name: taiga_events
+    #restart: always
+    links:
+      - taiga_rabbit
+    ports:
+      - 8888:8888
+    environment:
+      - RABBIT_USER=${TAIGA_RABBIT_USER}
+      - RABBIT_PASSWORD=${TAIGA_RABBIT_PASSWORD}
+      - RABBIT_VHOST='/'
+      - RABBIT_HOST=taiga_rabbit
+      - RABBIT_PORT=5672
+      - TAIGA_EVENTS_SECRET=${TAIGA_SECRET}
+      - TAIGA_EVENTS_PORT=8888
+
+  taiga_openldap:
+    image: osixia/openldap:latest
+    container_name: taiga_openldap
+    command: --copy-service
+    ports:
+      - "389:389"
+      - "636:636"
+    environment:
+      LDAP_LOG_LEVEL: ${TAIGA_LDAP_LOG_LEVEL}
+      LDAP_ORGANISATION: ${TAIGA_LDAP_COMPANY}
+      LDAP_BASE_DN: ${TAIGA_LDAP_BASE_DN}
+      LDAP_ADMIN_PASSWORD: ${TAIGA_LDAP_BIND_PASSWORD}
+      LDAP_DOMAIN: ${TAIGA_LDAP_DOMAIN_1}
+      LDAP_TLS: ${LDAP_TLS}
+      LDAP_REMOVE_CONFIG_AFTER_SETUP : "false"
+      HOSTMANE: "openldap"
+    volumes:
+      - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    restart: on-failure
+
+  taiga_dev_mailer:
+    image: sj26/mailcatcher:latest
+    hostname: taiga_dev_mailer
+    container_name: taiga_dev_mailer
+    restart: always
+    expose:
+      - 1025
+    ports:
+      - 1080:1080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
+networks:
+  default:

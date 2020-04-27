@@ -1,0 +1,10 @@
+version: 1
+
+dn: uid=test_user2,ou=People,dc=openldap
+objectClass: mailAccount
+objectClass: uidObject
+objectClass: organizationalUnit
+objectClass: top
+mail: test_user2
+ou: People
+uid: test_user2
