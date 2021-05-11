@@ -127,7 +127,9 @@ def login(username: str, password: str) -> tuple:
 
     # handle missing mandatory attributes
     raw_attributes = c.response[0].get('raw_attributes')
-    if raw_attributes.get(USERNAME_ATTRIBUTE) or raw_attributes.get(EMAIL_ATTRIBUTE) or raw_attributes.get(FULL_NAME_ATTRIBUTE):
+    if not (raw_attributes.get(USERNAME_ATTRIBUTE) and
+            raw_attributes.get(EMAIL_ATTRIBUTE) and
+            raw_attributes.get(FULL_NAME_ATTRIBUTE)):
         raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
     # attempt LDAP bind
