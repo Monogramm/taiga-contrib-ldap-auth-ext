@@ -106,7 +106,6 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
-    print(f"Admin group set: {GROUP_ADMIN}", sys.stderr)
     if GROUP_ADMIN:
         superuser = connector.is_user_in_group(username, GROUP_ADMIN)
     else:
@@ -139,9 +138,11 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         user.save()
         # update DB entry if LDAP field values differ
         # FIXME: is_superuser should also result in an update
-        if user.email != email or user.full_name != full_name:
+        if user.email != email or user.full_name != full_name \
+                or user.is_superuser != superuser:
+            print(f"Updating user: {email}, {full_name}, {superuser}", sys.stderr)
             user_object = user_model.objects.filter(pk=user.pk)
-            user_object.update(email=email, full_name=full_name)
+            user_object.update(email=email, full_name=full_name, is_superuser=superuser)
             user.refresh_from_db()
 
     return user
