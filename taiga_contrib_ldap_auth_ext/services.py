@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import sys
 
 from django.db import transaction as tx
 from django.conf import settings
@@ -105,6 +106,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/15
     # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/17
+    print(f"Admin group set: {GROUP_ADMIN}", sys.stderr)
     if GROUP_ADMIN:
         superuser = connector.is_user_in_group(username, GROUP_ADMIN)
     else:
