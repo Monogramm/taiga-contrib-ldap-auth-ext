@@ -22,12 +22,14 @@ Install the PIP package `taiga-contrib-ldap-auth-ext` in your
 
 If needed, change `pip` to `pip3` to use the Python 3 version.
 
+For an even simpler installation, you can use our own Docker image: <https://github.com/Monogramm/docker-taiga>
+
 
 ## Configuration
 
 ### taiga-back
 
-Add the following to `settings/local.py`:
+Add the following to `settings/local.py` for Taiga <=5.0 or `settings/common.py` for Taiga >5.0:
 
 ```python
 INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
