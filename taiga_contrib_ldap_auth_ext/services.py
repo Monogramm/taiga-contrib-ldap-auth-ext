@@ -110,6 +110,8 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         superuser = connector.is_user_in_group(username, GROUP_ADMIN)
     else:
         superuser = False
+    # INFO the user also needs to be staff member to access the admin panel
+    staff_member = superuser
 
     try:
         # has user logged in before?
@@ -120,7 +122,7 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
                                          email=email,
                                          full_name=full_name,
                                          is_superuser=superuser,
-                                         is_staff=superuser)
+                                         is_staff=staff_member)
         if SAVE_USER_PASSWD:
             # Set local password to match LDAP (issues/21)
             user.set_password(password)
@@ -138,12 +140,11 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
 
         user.save()
         # update DB entry if LDAP field values differ
-        # FIXME: is_superuser should also result in an update
         if user.email != email or user.full_name != full_name \
                 or user.is_superuser != superuser:
             user_object = user_model.objects.filter(pk=user.pk)
             user_object.update(email=email, full_name=full_name,
-                               is_superuser=superuser, is_staff=superuser)
+                               is_superuser=superuser, is_staff=staff_member)
             user.refresh_from_db()
 
     return user

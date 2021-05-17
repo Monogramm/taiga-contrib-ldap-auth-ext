@@ -28,6 +28,7 @@ class LDAPConnectionError(LDAPError):
 class LDAPUserLoginError(LDAPError):
     pass
 
+
 # TODO https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
 SERVER = getattr(settings, "LDAP_SERVER", "localhost")
 PORT = getattr(settings, "LDAP_PORT", "389")
@@ -46,7 +47,11 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 
-def _get_server():
+def _get_server() -> Server:
+    """ Creates a server instance based on the available data.
+
+    :return: a server instance
+    """
     tls = None
     if TLS_CERTS:
         tls = TLS_CERTS
@@ -58,21 +63,32 @@ def _get_server():
         server = Server(SERVER, port=PORT, get_info=NONE,
                         use_ssl=use_ssl, tls=tls)
     except Exception as e:
-        error = "Error connecting to LDAP server: %s" % e
+        error = f"Error connecting to LDAP server: {e}"
         raise LDAPConnectionError({"error_message": error})
 
     return server
 
 
-def _connect(user: str = '', password: str = ''):
+def _connect(username: str = '', password: str = '') -> Connection:
+    """ Creates a connection to the server.
+    If a user and a password a provided, they are used for establishing a connection.
+    If they are not provided and BIND_DN and BIND_PASSWORD are available,
+    they are used instead.
+    Otherwise an anonymous login is attempted.
+
+    :param username: the username to be used for the connection (default: '')
+    :param password: the password to be used for the connection (default: '')
+    :return: a connection to the server
+    """
     server = _get_server()
 
-    if user and password:
-        service_user = user
+    # if the user and password are provided explicitly, use them
+    if username and password:
+        service_user = username
         service_pass = password
         service_auth = SIMPLE
     # authenticate as service if credentials provided, anonymously otherwise
-    elif BIND_DN is not None and BIND_DN != '':
+    elif BIND_DN and BIND_PASSWORD:
         service_user = BIND_DN
         service_pass = BIND_PASSWORD
         service_auth = SIMPLE
@@ -90,7 +106,7 @@ def _connect(user: str = '', password: str = ''):
                        check_names=True, user=service_user,
                        password=service_pass, authentication=service_auth)
     except Exception as e:
-        error = "Error connecting to LDAP server: %s" % e
+        error = f"Error connecting to LDAP server: {e}"
         raise LDAPConnectionError({"error_message": error})
 
     return c
@@ -112,19 +128,17 @@ def login(username: str, password: str) -> tuple:
     c = _connect()
 
     # search for user-provided login
-    search_filter = '(|(%s=%s)(%s=%s))' % (
-        USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
+    search_filter = f'(|({USERNAME_ATTRIBUTE}={username})({EMAIL_ATTRIBUTE}={username}))'
     if SEARCH_FILTER_ADDITIONAL:
-        search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
+        search_filter = f'(&{search_filter}{SEARCH_FILTER_ADDITIONAL})'
     try:
         c.search(search_base=SEARCH_BASE,
                  search_filter=search_filter,
                  search_scope=SUBTREE,
-                 attributes=[USERNAME_ATTRIBUTE,
-                             EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
+                 attributes=[USERNAME_ATTRIBUTE, EMAIL_ATTRIBUTE, FULL_NAME_ATTRIBUTE],
                  paged_size=5)
     except Exception as e:
-        error = "LDAP login incorrect: %s" % e
+        error = f"LDAP login incorrect: {e}"
         raise LDAPUserLoginError({"error_message": error})
 
     # we are only interested in user objects in the response
@@ -132,25 +146,24 @@ def login(username: str, password: str) -> tuple:
     # stop if no search results
     if not c.response:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
-
     # handle multiple matches
-    if len(c.response) > 1:
+    elif len(c.response) > 1:
         raise LDAPUserLoginError(
             {"error_message": "LDAP login could not be determined."})
 
     # handle missing mandatory attributes
-    raw_attributes = c.response[0].get('raw_attributes')
-    if not (raw_attributes.get(USERNAME_ATTRIBUTE) and
-            raw_attributes.get(EMAIL_ATTRIBUTE) and
-            raw_attributes.get(FULL_NAME_ATTRIBUTE)):
+    attributes = c.response[0].get('attributes')
+    if not (attributes.get(USERNAME_ATTRIBUTE) and
+            attributes.get(EMAIL_ATTRIBUTE) and
+            attributes.get(FULL_NAME_ATTRIBUTE)):
         raise LDAPUserLoginError({"error_message": "LDAP login is invalid."})
 
     # attempt LDAP bind
-    username = raw_attributes.get(USERNAME_ATTRIBUTE)[0].decode('utf-8')
-    email = raw_attributes.get(EMAIL_ATTRIBUTE)[0].decode('utf-8')
-    full_name = raw_attributes.get(FULL_NAME_ATTRIBUTE)[0].decode('utf-8')
+    username = attributes.get(USERNAME_ATTRIBUTE)[0]
+    email = attributes.get(EMAIL_ATTRIBUTE)[0]
+    full_name = attributes.get(FULL_NAME_ATTRIBUTE)[0]
     try:
-        dn = str(bytes(c.response[0].get('dn'), 'utf-8'), encoding='utf-8')
+        dn = c.response[0].get('dn')
         _connect(user=dn, password=password)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
@@ -162,6 +175,12 @@ def login(username: str, password: str) -> tuple:
 
 
 def is_user_in_group(username: str, group: str) -> bool:
+    """ Check if given username is member of a group.
+
+    :param username: the username to be checked
+    :param group: the group to be checked
+    :return: if the username is member of the group
+    """
     c = _connect()
 
     c.search(search_base=group,
