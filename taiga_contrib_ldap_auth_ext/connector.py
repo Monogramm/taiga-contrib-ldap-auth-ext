@@ -46,6 +46,9 @@ FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "displayName
 TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
+GROUP_CLASS = getattr(settings, "LDAP_GROUP_CLASS", "posixGroup")
+GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_GROUP_MEMBER_ATTRIBUTE", "memberUid")
+
 
 def _get_server() -> Server:
     """ Creates a server instance based on the available data.
@@ -164,7 +167,7 @@ def login(username: str, password: str) -> tuple:
     full_name = attributes.get(FULL_NAME_ATTRIBUTE)[0]
     try:
         dn = c.response[0].get('dn')
-        _connect(user=dn, password=password)
+        _connect(username=dn, password=password)
     except Exception as e:
         error = "LDAP bind failed: %s" % e
         raise LDAPUserLoginError({"error_message": error})
@@ -184,8 +187,8 @@ def is_user_in_group(username: str, group: str) -> bool:
     c = _connect()
 
     c.search(search_base=group,
-             search_filter=f'(&(objectClass=posixGroup)(memberUid={username}))',
+             search_filter=f'(&(objectClass={GROUP_CLASS})({GROUP_MEMBER_ATTRIBUTE}={username}))',
              search_scope=SUBTREE,
-             attributes=['memberUid'])
+             attributes=[f'{GROUP_MEMBER_ATTRIBUTE}'])
 
     return len(c.response) > 0
