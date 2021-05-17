@@ -119,7 +119,8 @@ def register_or_update(username: str, email: str, full_name: str, password: str)
         user = user_model.objects.create(username=username_unique,
                                          email=email,
                                          full_name=full_name,
-                                         is_superuser=superuser)
+                                         is_superuser=superuser,
+                                         is_staff=superuser)
         if SAVE_USER_PASSWD:
             # Set local password to match LDAP (issues/21)
             user.set_password(password)
