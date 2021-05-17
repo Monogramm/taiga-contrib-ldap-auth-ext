@@ -46,8 +46,8 @@ FULL_NAME_ATTRIBUTE = getattr(settings, "LDAP_FULL_NAME_ATTRIBUTE", "displayName
 TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
-GROUP_CLASS = getattr(settings, "LDAP_GROUP_CLASS", "posixGroup")
-GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_GROUP_MEMBER_ATTRIBUTE", "memberUid")
+ADMIN_GROUP_CLASS = getattr(settings, "LDAP_ADMIN_GROUP_CLASS", "posixGroup")
+ADMIN_GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_ADMIN_GROUP_MEMBER_ATTRIBUTE", "memberUid")
 
 
 def _get_server() -> Server:
@@ -187,8 +187,9 @@ def is_user_in_group(username: str, group: str) -> bool:
     c = _connect()
 
     c.search(search_base=group,
-             search_filter=f'(&(objectClass={GROUP_CLASS})({GROUP_MEMBER_ATTRIBUTE}={username}))',
+             search_filter=f'(&(objectClass={ADMIN_GROUP_CLASS})'
+                           f'({ADMIN_GROUP_MEMBER_ATTRIBUTE}={username}))',
              search_scope=SUBTREE,
-             attributes=[f'{GROUP_MEMBER_ATTRIBUTE}'])
+             attributes=[f'{ADMIN_GROUP_MEMBER_ATTRIBUTE}'])
 
     return len(c.response) > 0
