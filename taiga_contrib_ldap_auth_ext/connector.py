@@ -52,7 +52,7 @@ ADMIN_GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_ADMIN_GROUP_MEMBER_ATTRIB
 
 
 def _get_server() -> Server:
-    """ Creates a server instance based on the available data.
+    """Creates a server instance based on the available data.
 
     :return: a server instance
     """
@@ -74,7 +74,7 @@ def _get_server() -> Server:
 
 
 def _connect(username: str = '', password: str = '') -> Connection:
-    """ Creates a connection to the server.
+    """Creates a connection to the server.
     If a user and a password a provided, they are used for establishing a connection.
     If they are not provided and BIND_DN and BIND_PASSWORD are available,
     they are used instead.
@@ -152,7 +152,7 @@ def login(username: str, password: str) -> tuple:
     if not c.response:
         raise LDAPUserLoginError({"error_message": "LDAP login not found"})
     # handle multiple matches
-    elif len(c.response) > 1:
+    if len(c.response) > 1:
         raise LDAPUserLoginError(
             {"error_message": "LDAP login could not be determined."})
 
@@ -180,7 +180,7 @@ def login(username: str, password: str) -> tuple:
 
 
 def is_user_in_group(username: str, group: str) -> bool:
-    """ Check if given username is member of a group.
+    """Check if given username is member of a group.
 
     :param username: the username to be checked
     :param group: the group to be checked
