@@ -47,7 +47,8 @@ TLS_CERTS = getattr(settings, "LDAP_TLS_CERTS", "")
 START_TLS = getattr(settings, "LDAP_START_TLS", False)
 
 ADMIN_GROUP_CLASS = getattr(settings, "LDAP_ADMIN_GROUP_CLASS", "posixGroup")
-ADMIN_GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_ADMIN_GROUP_MEMBER_ATTRIBUTE", "memberUid")
+ADMIN_GROUP_MEMBER_ATTRIBUTE = getattr(settings, "LDAP_ADMIN_GROUP_MEMBER_ATTRIBUTE",
+                                       "memberUid")
 
 
 def _get_server() -> Server:
@@ -131,7 +132,8 @@ def login(username: str, password: str) -> tuple:
     c = _connect()
 
     # search for user-provided login
-    search_filter = f'(|({USERNAME_ATTRIBUTE}={username})({EMAIL_ATTRIBUTE}={username}))'
+    search_filter = f'(|({USERNAME_ATTRIBUTE}={username})' \
+                    f'({EMAIL_ATTRIBUTE}={username}))'
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = f'(&{search_filter}{SEARCH_FILTER_ADDITIONAL})'
     try:
