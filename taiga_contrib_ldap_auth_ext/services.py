@@ -21,6 +21,7 @@ from taiga.auth.services import send_register_email
 from taiga.auth.services import make_auth_response_data
 from taiga.auth.signals import user_registered as user_registered_signal
 from taiga.auth.services import get_auth_plugins
+from taiga.auth.api import get_token
 
 from . import connector
 
@@ -65,6 +66,8 @@ def ldap_login_func(request):
 
         # Try fallback authentication
         try:
+            if FALLBACK == "normal":
+                return get_token(request.DATA)
             return get_auth_plugins()[FALLBACK]["login_func"](request)
         except BaseException as normal_error:
             # Merge error messages of 'normal' and 'ldap' auth.
