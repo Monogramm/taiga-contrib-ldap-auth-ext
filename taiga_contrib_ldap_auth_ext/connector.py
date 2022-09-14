@@ -57,6 +57,8 @@ def login(username: str, password: str) -> tuple:
     Can raise `exc.LDAPUserLoginError` exceptions if the
     login to LDAP fails.
 
+    :param username: a possibly unsanitized username
+    :param password: a possibly unsanitized password
     :returns: tuple (username, email, full_name)
 
     """
@@ -99,6 +101,7 @@ def login(username: str, password: str) -> tuple:
         raise LDAPConnectionError({"error_message": error})
 
     # search for user-provided login
+    # TODO The username should be sanitized to prevent LDAP injection
     search_filter = '(|(%s=%s)(%s=%s))' % (
         USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
     if SEARCH_FILTER_ADDITIONAL:

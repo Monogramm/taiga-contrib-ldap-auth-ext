@@ -55,7 +55,6 @@ def ldap_login_func(request):
     password_input = request.DATA.get('password', None)
 
     try:
-        # TODO: make sure these fields are sanitized before passing to LDAP server!
         username, email, full_name = connector.login(
             username=login_input, password=password_input)
     except connector.LDAPUserLoginError as ldap_error:
