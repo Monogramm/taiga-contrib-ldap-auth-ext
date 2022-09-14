@@ -14,6 +14,7 @@
 from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, ANONYMOUS, SIMPLE, SYNC, SUBTREE, NONE
 
 from django.conf import settings
+from ldap3.utils.conv import escape_filter_chars
 from taiga.base.connectors.exceptions import ConnectorBaseException
 
 
@@ -101,9 +102,9 @@ def login(username: str, password: str) -> tuple:
         raise LDAPConnectionError({"error_message": error})
 
     # search for user-provided login
-    # TODO The username should be sanitized to prevent LDAP injection
+    username_sanitized = escape_filter_chars(username)
     search_filter = '(|(%s=%s)(%s=%s))' % (
-        USERNAME_ATTRIBUTE, username, EMAIL_ATTRIBUTE, username)
+        USERNAME_ATTRIBUTE, username_sanitized, EMAIL_ATTRIBUTE, username_sanitized)
     if SEARCH_FILTER_ADDITIONAL:
         search_filter = '(&%s%s)' % (search_filter, SEARCH_FILTER_ADDITIONAL)
     try:
