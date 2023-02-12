@@ -8,7 +8,7 @@
 
 Extended [Taiga.io](https://taiga.io/) plugin for LDAP authentication.
 
-This is a fork of [Monogramm/taiga-contrib-ldap-auth-ext](https://github.com/Monogramm/taiga-contrib-ldap-auth-ext), which, in turn, is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth).
+This is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth), which also retrieves the various contributions and other forks into one.
 
 Compared to Monogramm/taiga-contrib-ldap-auth-ext, this repo has the following changes:
 
