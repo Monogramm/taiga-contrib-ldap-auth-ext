@@ -10,13 +10,6 @@ Extended [Taiga.io](https://taiga.io/) plugin for LDAP authentication.
 
 This is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth), which also retrieves the various contributions and other forks into one.
 
-Compared to Monogramm/taiga-contrib-ldap-auth-ext, this repo has the following changes:
-
-* Add step-by-step Docker setup guide to README
-* Adjust sample configuration in README
-
-You can always also [compare the changes in-depth on GitHub](https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/compare/master...TuringTux:taiga-contrib-ldap-auth-ext:master).
-
 ## :whale: Installation & Configuration with Docker
 
 If you installed a dockerized Taiga using the 30 Minute Setup approach, you should be able to install this plugin using this guide.
