@@ -152,6 +152,10 @@ The question is: How do you get a valid `conf.json`?
     ```
     You then have a valid, production-ready `conf.json` you can just extend by the entry mentioned above. I'd recommend this method.
 
+## :wrench: Installation & Configuration without Docker
+
+<!-- TODO: Add content -->
+
 ## :bulb: Further notes
 
 * If you are using the Taiga's built-in `USER_EMAIL_ALLOWED_DOMAINS` config option, all LDAP email addresses will still be filtered through this list. Ensure that if `USER_EMAIL_ALLOWED_DOMAINS` != `None`, that your corporate LDAP email domain is also listed there. This is due to the fact that LDAP users are automatically "registered" behind the scenes on their first login.
