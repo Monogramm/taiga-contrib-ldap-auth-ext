@@ -228,6 +228,30 @@ import ssl
 LDAP_TLS_CERTS = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ciphers='RSA+3DES')
 ```
 
+To not store the passwords in the local database, use the following line:
+
+```python
+LDAP_SAVE_LOGIN_PASSWORD = False
+```
+
+Group management via LDAP does not yet exist, see issues #15 and #17. However, the configuration would look a bit like this:
+
+```python
+# Group search filter where $1 is the project slug and $2 is the role slug
+#LDAP_GROUP_SEARCH_FILTER = 'CN=$2,OU=$1,OU=Groups,DC=example,DC=net'
+# Use an attribute in the user entry for membership
+#LDAP_USER_MEMBER_ATTRIBUTE = 'memberof,primaryGroupID'
+# Starting point within LDAP structure to search for login group
+#LDAP_GROUP_SEARCH_BASE = 'OU=Groups,DC=example,DC=net'
+# Group classes filter
+#LDAP_GROUP_FILTER = '(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames))'
+# Group member attribute
+#LDAP_GROUP_MEMBER_ATTRIBUTE = 'memberof,primaryGroupID'
+
+# Taiga super users group id
+#LDAP_GROUP_ADMIN = 'OU=TaigaAdmin,DC=example,DC=net'
+```
+
 </details>
 
 ## :bulb: Further notes
