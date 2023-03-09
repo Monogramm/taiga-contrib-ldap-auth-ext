@@ -99,24 +99,14 @@ FROM taigaio/taiga-back:latest
 COPY config.append.py /taiga-back/settings
 RUN cat /taiga-back/settings/config.append.py >> /taiga-back/settings/config.py && rm /taiga-back/settings/config.append.py
 
-# Install git, because we need it to install the taiga-ldap-contrib-auth-ext package
-RUN apt-get update \
-    && apt-get install -y git \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install git+https://github.com/TuringTux/taiga-contrib-ldap-auth-ext-2.git
-
-RUN apt-get purge -y git \
-    && apt-get autoremove -y
+RUN pip install taiga-contrib-ldap-auth-ext
 ```
 
 The statements in the Dockerfile have the following effect:
 
 1. `FROM ...` bases the image we build on the official `taigaio/taiga-back` image.
 2. `COPY ...` and `RUN ...` copy the `config.append.py` file into the container, append it to `/taiga-back/settings/config.py` and then delete it again.
-3. `RUN apt-get ...` fetches the apt package lists, installs Git and removes the lists again (to save some space)
-4. `RUN pip install ...` installs this plugin directly from Git (this is why we had to install Git)
-5. `RUN apt-get purge ...` removes Git again (and all its dependencies) because we only needed it to install the plugin.
+3. `RUN pip install ...` installs this plugin.
 </details>
 
 ### taiga-front
