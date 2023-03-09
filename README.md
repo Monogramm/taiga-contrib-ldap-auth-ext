@@ -120,6 +120,8 @@ If you use the installation without Docker, append the following contents to the
 ```python
 INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 
+# Multiple LDAP servers are currently not supported, see
+# https://github.com/Monogramm/taiga-contrib-ldap-auth-ext/issues/16
 LDAP_SERVER = "ldaps://ldap.example.com"
 LDAP_PORT = 636
 
@@ -170,6 +172,52 @@ It is recommended to limit the service account and only allow it to read and sea
 **`LDAP_MAP_USERNAME_TO_UID`**: This line fixes a bug. If omitted, the plugin will likely crash and no authentication is possible.
 
 <!-- TODO: Explain this -->
+</details>
+
+#### Additional configuration options
+
+<details>
+<summary>Click to expand</summary>
+
+By default, Taiga will fall back to `normal` authentication if LDAP authentication fails. Add the following line to disable this and only allow LDAP login:
+
+```python
+LDAP_FALLBACK = ""
+```
+
+You can specify additional search criteria that will be ANDed using the following line:
+
+```python
+LDAP_SEARCH_FILTER_ADDITIONAL = '(mail=*)'
+```
+
+If you want to change how the LDAP username, e-mail or name are mapped to the local database, you can use the following lines to do so:
+
+```python
+def _ldap_slugify(uid: str) -> str:
+    """Map an LDAP username to a local DB user unique identifier.
+
+    Upon successful LDAP bind, will override returned username attribute
+    value. May result in unexpected failures if changed after the database
+    has been populated. 
+    """
+
+    # example: force lower-case
+    return uid.lower()
+    
+LDAP_MAP_USERNAME_TO_UID = _ldap_slugify
+
+
+def _ldap_map_email(email: str) -> str:
+    ...
+
+def _ldap_map_name(name: str) -> str:
+    ...
+
+LDAP_MAP_EMAIL = _ldap_map_email
+LDAP_MAP_NAME = _ldap_map_name
+```
+
 </details>
 
 ## :bulb: Further notes
