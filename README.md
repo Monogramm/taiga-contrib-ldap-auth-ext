@@ -177,7 +177,7 @@ It is recommended to limit the service account and only allow it to read and sea
 #### Additional configuration options
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click here to expand</summary>
 
 By default, Taiga will fall back to `normal` authentication if LDAP authentication fails. Add the following line to disable this and only allow LDAP login:
 
