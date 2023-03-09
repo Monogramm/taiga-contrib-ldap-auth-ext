@@ -20,7 +20,7 @@ The following will assume that you have a clone of the [kaleidos-ventures/taiga-
 
 1. Edit the `taiga-back` section in the `docker-compose.yml`: Replace `image: taigaio/taiga-back:latest` with `build: ./custom-back`
 2. Create a folder `custom-back` next to the `docker-compose.yml` file
-3. In this folder, create a file `config.append.py`. The contents of the file are in the “Configuration” section at the end of this document.
+3. In this folder, create a file `config.append.py`. Copy the contents of the [`taiga-back` configuration](#taiga-back-configuration) section from this document into it.
 4. In this folder, also create a `Dockerfile`. The contents of the file are collapsed below.
 
 If you were to start Taiga now, it would not pull the `taiga-back` directly from Docker Hub but instead build the image from the specified `Dockerfile`. This is exactly what we want, however, do not start Taiga yet – there is still work to be done in `taiga-front`.
@@ -96,7 +96,7 @@ For an even simpler installation, you can use our own Docker image: <https://git
 
 ### `taiga-back`
 
-Edit the file `settings/common.py` (for Taiga >5.0) or `settings/local.py` (for Taiga ≤5.0) and append the taiga-back configuration reproduced in the “Configuration” section at the end of this document.
+Append the contents of the [`taiga-back` configuration](#taiga-back-configuration) section from this document to the file `settings/common.py` (for Taiga >5.0) or `settings/local.py` (for Taiga ≤5.0).
 
 ### `taiga-front`
 
