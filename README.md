@@ -16,7 +16,7 @@ If you installed a dockerized Taiga using the 30 Minute Setup approach, you shou
 
 The following will assume that you have a clone of the [kaleidos-ventures/taiga-docker](https://github.com/kaleidos-ventures/taiga-docker) repository on the computer you want to host Taiga on.
 
-### taiga-back
+### `taiga-back`
 
 1. Edit the `taiga-back` section in the `docker-compose.yml`: Replace `image: taigaio/taiga-back:latest` with `build: ./custom-back`
 2. Create a folder `custom-back` next to the `docker-compose.yml` file
@@ -47,7 +47,7 @@ The statements in the Dockerfile have the following effect:
 3. `RUN pip install ...` installs this plugin.
 </details>
 
-### taiga-front
+### `taiga-front`
 
 1. Edit the `taiga-front` section in the `docker-compose.yml`. Insert the following below `networks`:
 
@@ -94,11 +94,11 @@ If needed, change `pip` to `pip3` to use the Python 3 version.
 
 For an even simpler installation, you can use our own Docker image: <https://github.com/Monogramm/docker-taiga>
 
-### `taiga-back` configuration
+### `taiga-back`
 
 Edit the file `settings/common.py` (for Taiga >5.0) or `settings/local.py` (for Taiga ≤5.0) and append the taiga-back configuration reproduced in the “Configuration” section at the end of this document.
 
-### `taiga-front` configuration
+### `taiga-front`
 
 Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
 
