@@ -110,6 +110,8 @@ Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
 
 ### `taiga-back` configuration
 
+If you use the installation with Docker, put the following contents in the file `custom-back/config.append.py`. If you use the installation without Docker, append the following contents to the file `settings/common.py` (for Taiga >5.0) or `settings/local.py` (for Taiga ≤5.0). 
+
 <details>
 <summary>Click here to expand</summary>
 
