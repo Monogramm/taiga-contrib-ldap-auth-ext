@@ -84,7 +84,7 @@ It is recommended to limit the service account and only allow it to read and sea
 
 <!-- TODO: Explain this -->
 
-There are several more configurable options. See the (`taiga-back` configuration)[#taiga-back-configuration] section for more details.
+There are several more configurable options. See the [`taiga-back` configuration](#taiga-back-configuration) section for more details.
 </details>
 
 #### `custom-back/Dockerfile`
@@ -154,14 +154,12 @@ The question is: How do you get a valid `conf.json`?
 
 ## :wrench: Installation & Configuration without Docker
 
-
 ### Installation
 
-Install the PIP package `taiga-contrib-ldap-auth-ext` in your
-`taiga-back` python virtualenv:
+Install the PIP package `taiga-contrib-ldap-auth-ext` in your `taiga-back` python virtualenv:
 
 ```bash
-  pip install taiga-contrib-ldap-auth-ext
+pip install taiga-contrib-ldap-auth-ext
 ```
 
 If needed, change `pip` to `pip3` to use the Python 3 version.
@@ -282,11 +280,8 @@ suitably strong password should be chosen, eg. VmLYBbvJaf2kAqcrt5HjHdG6
 Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
 
 ```json
-    ...
-    "loginFormType": "ldap",
-    ...
+"loginFormType": "ldap",
 ```
-
 
 ## :bulb: Further notes
 
