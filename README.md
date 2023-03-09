@@ -10,7 +10,7 @@ Extended [Taiga.io](https://taiga.io/) plugin for LDAP authentication.
 
 This is a fork of [ensky/taiga-contrib-ldap-auth](https://github.com/ensky/taiga-contrib-ldap-auth), which also retrieves the various contributions and other forks into one.
 
-## :whale: Installation & Configuration with Docker
+## :whale: Installation with Docker
 
 If you installed a dockerized Taiga using the 30 Minute Setup approach, you should be able to install this plugin using this guide.
 
@@ -20,72 +20,10 @@ The following will assume that you have a clone of the [kaleidos-ventures/taiga-
 
 1. Edit the `taiga-back` section in the `docker-compose.yml`: Replace `image: taigaio/taiga-back:latest` with `build: ./custom-back`
 2. Create a folder `custom-back` next to the `docker-compose.yml` file
-3. In this folder, create a file `config.append.py`. The contents of the file are collapsed below.
+3. In this folder, create a file `config.append.py`. The contents of the file are in the “Configuration” section at the end of this document.
 4. In this folder, also create a `Dockerfile`. The contents of the file are collapsed below.
 
 If you were to start Taiga now, it would not pull the `taiga-back` directly from Docker Hub but instead build the image from the specified `Dockerfile`. This is exactly what we want, however, do not start Taiga yet – there is still work to be done in `taiga-front`.
-
-#### `custom-back/config.append.py`
-
-<details>
-<summary>Click here to expand</summary>
-
-```python
-INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
-
-LDAP_SERVER = "ldaps://ldap.example.com"
-LDAP_PORT = 636
-
-LDAP_BIND_DN = "CN=SVC Account,OU=Service Accounts,OU=Servers,DC=example,DC=com"
-LDAP_BIND_PASSWORD = "verysecurepassword"
-
-LDAP_SEARCH_BASE = 'OU=DevTeam,DC=example,DC=net'
-
-LDAP_USERNAME_ATTRIBUTE = "uid"
-LDAP_EMAIL_ATTRIBUTE = "mail"
-LDAP_FULL_NAME_ATTRIBUTE = "givenName"
-
-LDAP_SAVE_LOGIN_PASSWORD = False
-
-LDAP_MAP_USERNAME_TO_UID = None
-```
-
-Change the following fields matching your setup:
-
-**`LDAP_SERVER` and `LDAP_PORT`:** You will definitely have to change the server URL. If possible, try to keep the `ldaps://` to use a secure connection. The port can likely stay as is, unless...
-
-* ... you run the LDAP server on a different (non-standard) port.
-* ... you want to use unencrypted, insecure LDAP: In this case, change `ldaps://` to `ldap://` and the port to 389.
-* ... you want to use STARTTLS. In this case, you have to make the same changes as for unencrypted, insecure LDAP and set `LDAP_START_TLS = True`, making the section look like this:
-    ```python
-    LDAP_SERVER = "ldap://ldap.example.com"
-    LDAP_PORT = 389
-    LDAP_START_TLS = True
-    ```
-    What happens is that an unencrypted connection is established first, but then upgraded to a secure connection. To the best of my knowledge, this should also be safe – however, I like the `ldaps://` variant more.
-
-**`LDAP_BIND_DN`, `LDAP_BIND_PASSWORD`**: You will need to change them. 
-
-The bind user is a dedicated service account. The plugin will connect to the LDAP server using this service account and search for an LDAP entry that has a `LDAP_USERNAME_ATTRIBUTE` or `LDAP_EMAIL_ATTRIBUTE` matching the user-provided login.
-
-If the search is successful, the found LDAP entry and the user-provided password are used to attempt a bind to LDAP. If the bind is successful, then we can say that the user is authorised to log in to Taiga.
-
-If `LDAP_BIND_DN` is not specified or blank, an anonymous bind is attempted.
-
-It is recommended to limit the service account and only allow it to read and search the LDAP structure (no write or other LDAP access). The credentials should also not be used for any other account on the network. This minimizes the damage in cases of a successful LDAP injection or if you ever accidentially give someone access to the configuration file (e.g. by committing it into version control or having misconfigured permissions). Use a suitably strong, ideally randomly generated password.
-
-**`LDAP_SEARCH_BASE`**: The subtree where the users are located.
-
-**`LDAP_USERNAME_ATTRIBUTE`, `LDAP_EMAIL_ATTRIBUTE`, `LDAP_FULL_NAME_ATTRIBUTE`**: These are the LDAP attributes used to get the username, email and full name shown in the Taiga application. They need to have a value in LDAP. Depending on your LDAP setup, you might need to change them.
-
-**`LDAP_SAVE_LOGIN_PASSWORD`**: Set this to `True` or remove the line if you want to store the passwords in the local database as well.
-
-**`LDAP_MAP_USERNAME_TO_UID`**: This line fixes a bug. If omitted, the plugin will likely crash and no authentication is possible.
-
-<!-- TODO: Explain this -->
-
-There are several more configurable options. See the [`taiga-back` configuration](#taiga-back-configuration) section for more details.
-</details>
 
 #### `custom-back/Dockerfile`
 
@@ -121,7 +59,7 @@ The statements in the Dockerfile have the following effect:
     There should already be a commented block hinting that you can do this (just with a different path). You can delete this block, or, alternatively, place the file at the path given there and just remove the `# `.
 
 2. Create a folder `custom-front` next to the `docker-compose.yml` file
-3. In this folder, create a file `conf.override.json`. The contents of the file are collapsed below.
+3. In this folder, create a file `conf.override.json`. The contents of the file are below.
 
 #### `custom-front/conf.override.json`
 
@@ -142,7 +80,7 @@ The question is: How do you get a valid `conf.json`?
     ```
     You then have a valid, production-ready `conf.json` you can just extend by the entry mentioned above. I'd recommend this method.
 
-## :wrench: Installation & Configuration without Docker
+## :package: Installation without Docker
 
 ### Installation
 
@@ -158,7 +96,19 @@ For an even simpler installation, you can use our own Docker image: <https://git
 
 ### `taiga-back` configuration
 
-Add the following to `settings/local.py` for Taiga <=5.0 or `settings/common.py` for Taiga >5.0:
+Edit the file `settings/common.py` (for Taiga >5.0) or `settings/local.py` (for Taiga ≤5.0) and append the taiga-back configuration reproduced in the “Configuration” section at the end of this document.
+
+### `taiga-front` configuration
+
+Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
+
+```json
+"loginFormType": "ldap",
+```
+
+## :wrench: Configuration
+
+### `taiga-back` configuration
 
 <details>
 <summary>Click here to expand</summary>
@@ -264,14 +214,6 @@ to specify the service account password in the configuration file. A
 suitably strong password should be chosen, eg. VmLYBbvJaf2kAqcrt5HjHdG6
 
 </details>
-
-### `taiga-front` configuration
-
-Change the `loginFormType` setting to `"ldap"` in `dist/conf.json`:
-
-```json
-"loginFormType": "ldap",
-```
 
 ## :bulb: Further notes
 
