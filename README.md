@@ -218,6 +218,16 @@ LDAP_MAP_EMAIL = _ldap_map_email
 LDAP_MAP_NAME = _ldap_map_name
 ```
 
+To support alternative TLS ciphersuites, protocol versions or disable certificate validation (note that all of these options have the power to harm your security, so apply them with caution), use the following lines:
+
+```python
+from ldap3 import Tls
+import ssl
+
+# Add or remove options or change values as necessary.
+LDAP_TLS_CERTS = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ciphers='RSA+3DES')
+```
+
 </details>
 
 ## :bulb: Further notes
